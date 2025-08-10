@@ -97,20 +97,21 @@ export function BasicPromptForm() {
     name: 'brandPalette',
   });
 
+  const uniqueStepTitles = useMemo(() => {
+    return formSteps.reduce((acc, step) => {
+      if (!acc.includes(step.title)) {
+        acc.push(step.title);
+      }
+      return acc;
+    }, [] as string[]);
+  }, []);
+  
+  const currentTitle = formSteps[currentStep].title;
+  const currentUniqueStepIndex = uniqueStepTitles.indexOf(currentTitle);
+
   const progress = useMemo(() => {
-    // Group steps by title to calculate progress
-    const uniqueSteps = formSteps.reduce((acc, step) => {
-        if (!acc.some(s => s.title === step.title)) {
-            acc.push(step);
-        }
-        return acc;
-    }, [] as typeof formSteps);
-    
-    const currentTitle = formSteps[currentStep].title;
-    const currentUniqueStepIndex = uniqueSteps.findIndex(s => s.title === currentTitle);
-    
-    return ((currentUniqueStepIndex + 1) / uniqueSteps.length) * 100;
-  }, [currentStep]);
+    return ((currentUniqueStepIndex + 1) / uniqueStepTitles.length) * 100;
+  }, [currentUniqueStepIndex, uniqueStepTitles.length]);
 
 
   const selectedStyle = form.watch('style');
@@ -125,35 +126,26 @@ export function BasicPromptForm() {
   }, [selectedStyle, form]);
 
   async function handleNext() {
-    const currentStepInfo = formSteps.find((_, index) => {
-      const title = formSteps[index].title;
-      const currentTitle = formSteps[currentStep].title;
-      return title === currentTitle;
-    });
-  
-    if (!currentStepInfo) return;
-  
+    const currentStepInfo = formSteps[currentStep];
     const stepsWithSameTitle = formSteps.filter(step => step.title === currentStepInfo.title);
     const fieldNamesToValidate = stepsWithSameTitle.map(step => step.name);
   
     // @ts-ignore
     const isValid = await form.trigger(fieldNamesToValidate);
     if (isValid) {
-      const lastIndexOfCurrentTitle = formSteps.map(s => s.title).lastIndexOf(currentStepInfo.title);
-      setCurrentStep(lastIndexOfCurrentTitle + 1);
+      if (currentUniqueStepIndex < uniqueStepTitles.length - 1) {
+        const nextStepTitle = uniqueStepTitles[currentUniqueStepIndex + 1];
+        const nextStepIndex = formSteps.findIndex(s => s.title === nextStepTitle);
+        setCurrentStep(nextStepIndex);
+      }
     }
   }
 
   function handleBack() {
-    const currentTitle = formSteps[currentStep].title;
-    const firstIndexOfCurrentTitle = formSteps.findIndex(s => s.title === currentTitle);
-    
-    if (firstIndexOfCurrentTitle > 0) {
-      const prevStepTitle = formSteps[firstIndexOfCurrentTitle - 1].title;
-      const firstIndexOfPrevStepTitle = formSteps.findIndex(s => s.title === prevStepTitle);
-      setCurrentStep(firstIndexOfPrevStepTitle);
-    } else {
-        setCurrentStep(0);
+    if (currentUniqueStepIndex > 0) {
+      const prevStepTitle = uniqueStepTitles[currentUniqueStepIndex - 1];
+      const prevStepIndex = formSteps.findIndex(s => s.title === prevStepTitle);
+      setCurrentStep(prevStepIndex);
     }
   }
 
@@ -185,15 +177,8 @@ export function BasicPromptForm() {
   if (isLoading) {
     return <GeneratingAnimation />;
   }
-
-  const uniqueStepTitles = formSteps.reduce((acc, step) => {
-    if (!acc.includes(step.title)) {
-        acc.push(step.title);
-    }
-    return acc;
-  }, [] as string[]);
   
-  const isLastStep = uniqueStepTitles.indexOf(formSteps[currentStep].title) === uniqueStepTitles.length - 1;
+  const isLastStep = currentUniqueStepIndex === uniqueStepTitles.length - 1;
 
   const colorLabels = ['Primary Colour', 'Secondary Colour', 'Tertiary Colour', 'Accent Colour 1', 'Accent Colour 2'];
 
@@ -207,8 +192,6 @@ export function BasicPromptForm() {
     return acc;
   }, {});
 
-  const currentTitle = formSteps[currentStep].title;
-  const currentUniqueStepIndex = uniqueStepTitles.indexOf(currentTitle);
   const totalUniqueSteps = uniqueStepTitles.length;
 
 
