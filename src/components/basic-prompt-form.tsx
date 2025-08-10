@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { WandSparkles } from 'lucide-react';
@@ -9,11 +9,12 @@ import { WandSparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateBasicPrompt, type GenerateBasicPromptInput } from '@/ai/flows/generate-prompt';
 import { PromptOutput } from './prompt-output';
+import { MultiChoiceOption } from './multi-choice-option';
+import { Progress } from '@/components/ui/progress';
 
 const formSchema = z.object({
   gender: z.string().min(1, 'Gender is required.'),
@@ -21,6 +22,21 @@ const formSchema = z.object({
   clothingType: z.string().min(1, 'Clothing type is required.'),
   brandPalette: z.string().min(1, 'Brand palette is required.'),
 });
+
+const GENDERS = [
+  { value: 'female', label: 'Female', image: 'https://placehold.co/600x400.png', hint: 'female fashion' },
+  { value: 'male', label: 'Male', image: 'https://placehold.co/600x400.png', hint: 'male fashion' },
+  { value: 'non-binary', label: 'Non-binary', image: 'https://placehold.co/600x400.png', hint: 'androgynous fashion' },
+];
+
+const ETHNICITIES = [
+    { value: 'asian', label: 'Asian', image: 'https://placehold.co/600x400.png', hint: 'asian fashion' },
+    { value: 'black', label: 'Black', image: 'https://placehold.co/600x400.png', hint: 'black fashion' },
+    { value: 'caucasian', label: 'Caucasian', image: 'https://placehold.co/600x400.png', hint: 'caucasian fashion' },
+    { value: 'hispanic', label: 'Hispanic', image: 'https://placehold.co/600x400.png', hint: 'hispanic fashion' },
+    { value: 'middle-eastern', label: 'Middle Eastern', image: 'https://placehold.co/600x400.png', hint: 'middle eastern fashion' },
+    { value: 'multiracial', label: 'Multiracial', image: 'https://placehold.co/600x400.png', hint: 'multiracial fashion' },
+]
 
 export function BasicPromptForm() {
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
@@ -35,7 +51,17 @@ export function BasicPromptForm() {
       clothingType: '',
       brandPalette: '',
     },
+    mode: 'onChange'
   });
+
+  const formValues = form.watch();
+
+  const progress = useMemo(() => {
+    const totalFields = 4;
+    const filledFields = Object.values(formValues).filter(value => value && value.length > 0).length;
+    return (filledFields / totalFields) * 100;
+  }, [formValues]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -57,6 +83,7 @@ export function BasicPromptForm() {
 
   return (
     <div className="space-y-6">
+       <Progress value={progress} className="w-full" />
       <Card>
         <CardHeader>
           <CardTitle className="font-headline">Basic Mode</CardTitle>
@@ -65,54 +92,57 @@ export function BasicPromptForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField
+               <Controller
                   control={form.control}
                   name="gender"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Model Gender</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a gender" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="non-binary">Non-binary</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {GENDERS.map((gender) => (
+                                <MultiChoiceOption
+                                    key={gender.value}
+                                    label={gender.label}
+                                    image={gender.image}
+                                    data-ai-hint={gender.hint}
+                                    isSelected={field.value === gender.value}
+                                    onSelect={() => field.onChange(gender.value)}
+                                />
+                            ))}
+                        </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
+
+                <Controller
                   control={form.control}
                   name="ethnicity"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Model Ethnicity</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an ethnicity" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="asian">Asian</SelectItem>
-                          <SelectItem value="black">Black</SelectItem>
-                          <SelectItem value="caucasian">Caucasian</SelectItem>
-                          <SelectItem value="hispanic">Hispanic</SelectItem>
-                          <SelectItem value="middle-eastern">Middle Eastern</SelectItem>
-                          <SelectItem value="multiracial">Multiracial</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {ETHNICITIES.map((ethnicity) => (
+                                <MultiChoiceOption
+                                    key={ethnicity.value}
+                                    label={ethnicity.label}
+                                    image={ethnicity.image}
+                                    data-ai-hint={ethnicity.hint}
+                                    isSelected={field.value === ethnicity.value}
+                                    onSelect={() => field.onChange(ethnicity.value)}
+                                />
+                            ))}
+                        </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="clothingType"
