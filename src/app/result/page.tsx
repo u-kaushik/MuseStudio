@@ -108,6 +108,9 @@ export default function ResultPage() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
+  const navigateToSettings = () => {
+    router.push('/?tab=settings');
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-background">
@@ -130,7 +133,7 @@ export default function ResultPage() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/#settings')}>Settings</DropdownMenuItem>
+                <DropdownMenuItem onClick={navigateToSettings}>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>

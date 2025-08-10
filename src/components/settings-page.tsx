@@ -1,5 +1,7 @@
+
 'use client';
 
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +17,12 @@ const palettes = [
 ];
 
 export function SettingsPage() {
+    const { user } = useAuth();
+
+    if (!user) {
+        return null;
+    }
+
     return (
         <div className="space-y-8">
             <Card>
@@ -25,18 +33,18 @@ export function SettingsPage() {
                 <CardContent className="space-y-4">
                     <div className="flex items-center space-x-4">
                         <Avatar className="h-20 w-20">
-                            <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="woman portrait" />
-                            <AvatarFallback>MU</AvatarFallback>
+                            <AvatarImage src={user.photoURL || "https://placehold.co/100x100.png"} data-ai-hint="woman portrait" />
+                            <AvatarFallback>{user.displayName?.charAt(0) || 'M'}</AvatarFallback>
                         </Avatar>
                         <Button variant="outline">Change Photo</Button>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="name">Name</Label>
-                        <Input id="name" defaultValue="Muse User" />
+                        <Input id="name" defaultValue={user.displayName || ''} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" defaultValue="user@muse.studio" disabled />
+                        <Input id="email" type="email" defaultValue={user.email || ''} disabled />
                     </div>
                     <Button>Save Changes</Button>
                 </CardContent>

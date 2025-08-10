@@ -9,13 +9,27 @@ import { AdvancedPromptForm } from "@/components/advanced-prompt-form";
 import { SettingsPage } from "@/components/settings-page";
 import { Icons } from "@/components/icons";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+function getInitialTab(tabParam: string | null) {
+  if (tabParam === 'settings' || tabParam === 'advanced' || tabParam === 'basic') {
+    return tabParam;
+  }
+  return 'basic';
+}
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState('basic');
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    setActiveTab(getInitialTab(tab));
+  }, [searchParams]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,6 +39,15 @@ export default function Home() {
 
   if (loading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/?tab=${value}`, { scroll: false });
+  }
+
+  const navigateToSettings = () => {
+    handleTabChange('settings');
   }
 
   return (
@@ -48,7 +71,7 @@ export default function Home() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/#settings')}>Settings</DropdownMenuItem>
+                <DropdownMenuItem onClick={navigateToSettings}>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
@@ -57,7 +80,7 @@ export default function Home() {
         </div>
       </header>
       <main className="flex-1 p-4 sm:p-6 md:p-8">
-        <Tabs defaultValue="basic" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-3">
               <TabsTrigger value="basic">Basic Mode</TabsTrigger>
