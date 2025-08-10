@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Lock } from "lucide-react";
 
 function getInitialTab(tabParam: string | null) {
-  if (tabParam === 'settings' || tabParam === 'advanced' || tabParam === 'basic') {
+  if (tabParam === 'settings' || tabParam === 'advanced') {
     return tabParam;
   }
   return 'advanced';
@@ -84,7 +84,7 @@ export default function Home() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-3">
-              <TabsTrigger value="basic">
+              <TabsTrigger value="basic" disabled>
                 <Lock className="mr-2 h-4 w-4" />
                 Basic Mode
               </TabsTrigger>
