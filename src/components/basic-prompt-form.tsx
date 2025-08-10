@@ -77,11 +77,11 @@ const CLOTHING_TYPES = [
 const formSteps = [
   { name: 'commercialObjective', type: 'multi-choice', title: 'Step 1: Select Your Commercial Objective', description: 'Choose the primary goal for your visual content.', options: COMMERCIAL_OBJECTIVES },
   { name: 'brandPalette', type: 'color-picker', title: 'Step 2: Input your brand palette', description: 'Select up to five colours that represent your brand, upload a brand guideline PDF or describe your brand vibe in text. These selections shape the mood and tone of your AI model.' },
-  { name: 'gender', type: 'multi-choice', title: 'Step 3: Define Your Model', description: 'Select the gender that best represents your target audience.', options: GENDERS },
-  { name: 'style', type: 'multi-choice', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: STYLES, subCategory: 'Style' },
-  { name: 'mood', type: 'multi-choice', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
-  { name: 'complexion', type: 'multi-choice', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
-  { name: 'intensity', type: 'slider', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
+  { name: 'style', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: STYLES, subCategory: 'Style' },
+  { name: 'mood', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
+  { name: 'complexion', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
+  { name: 'intensity', type: 'slider', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
+  { name: 'gender', type: 'multi-choice', title: 'Step 4: Define Your Model', description: 'Select the gender that best represents your target audience.', options: GENDERS },
   { name: 'clothingType', type: 'multi-choice', title: 'Step 5: Choose Clothing Type', description: 'Select the type of clothing your model will be wearing.', options: CLOTHING_TYPES },
 ] as const;
 
