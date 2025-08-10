@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface PromptOutputProps {
@@ -25,35 +24,23 @@ export function PromptOutput({ prompt }: PromptOutputProps) {
 
   if (!prompt) {
     return (
-       <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="font-headline">Generated Prompt</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <div className="space-y-2 mt-6">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
-          </div>
-        </CardContent>
-      </Card>
+        </div>
     );
   }
 
   return (
-    <Card className="mt-6">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="font-headline">Generated Prompt</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onCopy}>
+    <div className="relative mt-6">
+        <Button variant="ghost" size="icon" onClick={onCopy} className="absolute top-2 right-2">
           {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
           <span className="sr-only">Copy prompt</span>
         </Button>
-      </CardHeader>
-      <CardContent>
         <pre className="text-sm bg-muted rounded-md p-4 whitespace-pre-wrap font-body">
           <code>{prompt}</code>
         </pre>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

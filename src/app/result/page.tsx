@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Icons } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -52,40 +53,43 @@ function ResultContent() {
 
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-            <div className="flex-1">
-                 {isEditingTitle ? (
-                    <div className="flex items-center gap-2">
-                        <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-2xl font-headline" />
-                        <Button size="icon" variant="ghost" onClick={() => setIsEditingTitle(false)}><Check/></Button>
-                    </div>
-                 ) : (
-                    <div className="flex items-center gap-2">
-                        <CardTitle className="font-headline text-2xl">{title}</CardTitle>
-                        <Button size="icon" variant="ghost" onClick={() => setIsEditingTitle(true)}><Pen/></Button>
-                    </div>
-                 )}
-                <p className="text-sm text-muted-foreground mt-1">{date}</p>
-            </div>
-            <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={handleSave}><Bookmark className="mr-2"/> Save</Button>
-                <Button variant="outline" onClick={handleFavorite}><Heart className="mr-2"/> Favorite</Button>
-            </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <PromptOutput prompt={prompt} />
-      </CardContent>
-      <CardFooter>
-        <Button asChild variant="outline">
-          <Link href="/">
-            <ArrowLeft className="mr-2" /> Create Another Prompt
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+    <>
+      <Progress value={100} className="w-full mb-6" />
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+              <div className="flex-1">
+                   {isEditingTitle ? (
+                      <div className="flex items-center gap-2">
+                          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-2xl font-headline" />
+                          <Button size="icon" variant="ghost" onClick={() => setIsEditingTitle(false)}><Check/></Button>
+                      </div>
+                   ) : (
+                      <div className="flex items-center gap-2">
+                          <CardTitle className="font-headline text-2xl">{title}</CardTitle>
+                          <Button size="icon" variant="ghost" onClick={() => setIsEditingTitle(true)}><Pen/></Button>
+                      </div>
+                   )}
+                  <p className="text-sm text-muted-foreground mt-1">{date}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={handleSave}><Bookmark className="mr-2"/> Save</Button>
+                  <Button variant="outline" onClick={handleFavorite}><Heart className="mr-2"/> Favorite</Button>
+              </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <PromptOutput prompt={prompt} />
+        </CardContent>
+        <CardFooter>
+          <Button asChild variant="outline">
+            <Link href="/">
+              <ArrowLeft className="mr-2" /> Create Another Prompt
+            </Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 }
 
