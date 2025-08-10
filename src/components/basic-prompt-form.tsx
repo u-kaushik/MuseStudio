@@ -18,51 +18,67 @@ import { MultiChoiceOption } from './multi-choice-option';
 import { Progress } from '@/components/ui/progress';
 import { ColorPicker } from './color-picker';
 import { GeneratingAnimation } from './generating-animation';
+import { Slider } from './ui/slider';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
   gender: z.string().min(1, 'Gender is required.'),
-  ethnicity: z.string().min(1, 'Ethnicity is required.'),
+  style: z.string().min(1, 'Style is required.'),
+  mood: z.string().min(1, 'Mood is required.'),
+  complexion: z.string().min(1, 'Complexion is required.'),
+  intensity: z.number().min(0).max(100),
   clothingType: z.string().min(1, 'Clothing type is required.'),
   brandPalette: z.array(z.string()).min(3, 'At least three colors are required.'),
 });
 
 const COMMERCIAL_OBJECTIVES = [
-    { value: 'brand-awareness', label: 'Brand Awareness', image: 'https://placehold.co/600x400.png', hint: 'brand campaign' },
-    { value: 'product-listing', label: 'Product Listing (PLP)', image: 'https://placehold.co/600x400.png', hint: 'product grid' },
-    { value: 'product-detail', label: 'Product Detail (PDP)', image: 'https://placehold.co/600x400.png', hint: 'product details' },
+    { value: 'brand-awareness', label: 'Brand Awareness', description: 'Engage and attract a wide audience.', image: 'https://placehold.co/600x400.png', hint: 'brand campaign' },
+    { value: 'product-listing', label: 'Product Listing (PLP)', description: 'Showcase products in a grid.', image: 'https://placehold.co/600x400.png', hint: 'product grid' },
+    { value: 'product-detail', label: 'Product Detail (PDP)', description: 'Focus on a single product\'s features.', image: 'https://placehold.co/600x400.png', hint: 'product details' },
 ];
 
 const GENDERS = [
-  { value: 'female', label: 'Female', image: 'https://placehold.co/600x400.png', hint: 'female fashion' },
-  { value: 'male', label: 'Male', image: 'https://placehold.co/600x400.png', hint: 'male fashion' },
-  { value: 'non-binary', label: 'Non-binary', image: 'https://placehold.co/600x400.png', hint: 'androgynous fashion' },
+  { value: 'female', label: 'Female', description: 'Feminine styles and forms.', image: 'https://placehold.co/600x400.png', hint: 'female fashion' },
+  { value: 'male', label: 'Male', description: 'Masculine styles and forms.', image: 'https://placehold.co/600x400.png', hint: 'male fashion' },
+  { value: 'non-binary', label: 'Non-binary', description: 'Gender-neutral and androgynous styles.', image: 'https://placehold.co/600x400.png', hint: 'androgynous fashion' },
 ];
 
-const ETHNICITIES = [
-    { value: 'asian', label: 'Asian', image: 'https://placehold.co/600x400.png', hint: 'asian fashion' },
-    { value: 'black', label: 'Black', image: 'https://placehold.co/600x400.png', hint: 'black fashion' },
-    { value: 'caucasian', label: 'Caucasian', image: 'https://placehold.co/600x400.png', hint: 'caucasian fashion' },
-    { value: 'hispanic', label: 'Hispanic', image: 'https://placehold.co/600x400.png', hint: 'hispanic fashion' },
-    { value: 'middle-eastern', label: 'Middle Eastern', image: 'https://placehold.co/600x400.png', hint: 'middle eastern fashion' },
-    { value: 'multiracial', label: 'Multiracial', image: 'https://placehold.co/600x400.png', hint: 'multiracial fashion' },
-]
+const STYLES = [
+    { value: 'classic-elegance', label: 'Classic Elegance', description: 'Timeless luxury with soft silhouettes.', image: 'https://placehold.co/600x400.png', hint: 'classic fashion' },
+    { value: 'modern-minimal', label: 'Modern Minimal', description: 'Clean lines and understated design.', image: 'https://placehold.co/600x400.png', hint: 'minimalist fashion' },
+    { value: 'dramatic-glamour', label: 'Dramatic Glamour', description: 'Bold editorial looks with striking shapes.', image: 'https://placehold.co/600x400.png', hint: 'glamorous fashion' },
+];
+
+const MOODS = [
+    { value: 'mystery-curiosity', label: 'Mystery & Curiosity', description: 'Create intrigue and spark curiosity.', image: 'https://placehold.co/600x400.png', hint: 'mysterious mood' },
+    { value: 'energy-excitement', label: 'Energy & Excitement', description: 'Ignite energy and excitement.', image: 'https://placehold.co/600x400.png', hint: 'energetic mood' },
+    { value: 'trust-sophistication', label: 'Trust & Sophistication', description: 'Project trust, calm and sophistication.', image: 'https://placehold.co/600x400.png', hint: 'sophisticated mood' },
+];
+
+const COMPLEXIONS = [
+    { value: 'light-complexion', label: 'Light Complexion', description: 'Fair skin, blonde hair, blue eyes.', image: 'https://placehold.co/600x400.png', hint: 'light complexion' },
+    { value: 'medium-complexion', label: 'Medium Complexion', description: 'Tan or olive skin, brown hair, green eyes.', image: 'https://placehold.co/600x400.png', hint: 'medium complexion' },
+    { value: 'dark-complexion', label: 'Dark Complexion', description: 'Deep skin, black hair, brown eyes.', image: 'https://placehold.co/600x400.png', hint: 'dark complexion' },
+];
 
 const CLOTHING_TYPES = [
-    { value: 'streetwear', label: 'Streetwear', image: 'https://placehold.co/600x400.png', hint: 'streetwear fashion' },
-    { value: 'formal', label: 'Formal Wear', image: 'https://placehold.co/600x400.png', hint: 'formal fashion' },
-    { value: 'casual', label: 'Casual Wear', image: 'https://placehold.co/600x400.png', hint: 'casual fashion' },
-    { value: 'sportswear', label: 'Sportswear', image: 'https://placehold.co/600x400.png', hint: 'sportswear fashion' },
-    { value: 'evening-gown', label: 'Evening Gown', image: 'https://placehold.co/600x400.png', hint: 'evening gown' },
-    { value: 'business-suit', label: 'Business Suit', image: 'https://placehold.co/600x400.png', hint: 'business suit' },
+    { value: 'streetwear', label: 'Streetwear', description: 'Casual clothing of a style worn by urban youth.', image: 'https://placehold.co/600x400.png', hint: 'streetwear fashion' },
+    { value: 'formal', label: 'Formal Wear', description: 'Clothing suitable for formal events.', image: 'https://placehold.co/600x400.png', hint: 'formal fashion' },
+    { value: 'casual', label: 'Casual Wear', description: 'Everyday comfortable clothing.', image: 'https://placehold.co/600x400.png', hint: 'casual fashion' },
+    { value: 'sportswear', label: 'Sportswear', description: 'Clothing designed for sports or physical exercise.', image: 'https://placehold.co/600x400.png', hint: 'sportswear fashion' },
+    { value: 'evening-gown', label: 'Evening Gown', description: 'A long, elegant dress worn for formal evening events.', image: 'https://placehold.co/600x400.png', hint: 'evening gown' },
+    { value: 'business-suit', label: 'Business Suit', description: 'A formal suit for professional settings.', image: 'https://placehold.co/600x400.png', hint: 'business suit' },
 ];
 
 const formSteps = [
-  { name: 'commercialObjective', type: 'multi-choice', label: 'Commercial Objective', options: COMMERCIAL_OBJECTIVES },
-  { name: 'gender', type: 'multi-choice', label: 'Model Gender', options: GENDERS },
-  { name: 'ethnicity', type: 'multi-choice', label: 'Model Ethnicity', options: ETHNICITIES },
-  { name: 'clothingType', type: 'multi-choice', label: 'Clothing Type', options: CLOTHING_TYPES },
-  { name: 'brandPalette', type: 'color-picker', label: 'Brand Palette' },
+  { name: 'commercialObjective', type: 'multi-choice', title: 'Step 1: Select Your Commercial Objective', description: 'Choose the primary goal for your visual content.', options: COMMERCIAL_OBJECTIVES },
+  { name: 'gender', type: 'multi-choice', title: 'Step 2: Define Your Model', description: 'Select the gender that best represents your target audience.', options: GENDERS },
+  { name: 'style', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: STYLES, subCategory: 'Style' },
+  { name: 'mood', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
+  { name: 'complexion', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
+  { name: 'intensity', type: 'slider', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
+  { name: 'clothingType', type: 'multi-choice', title: 'Step 4: Choose Clothing Type', description: 'Select the type of clothing your model will be wearing.', options: CLOTHING_TYPES },
+  { name: 'brandPalette', type: 'color-picker', title: 'Step 5: Select Your Brand Palette', description: 'Choose a color palette that aligns with your brand identity.' },
 ] as const;
 
 
@@ -77,7 +93,10 @@ export function BasicPromptForm() {
     defaultValues: {
       commercialObjective: '',
       gender: '',
-      ethnicity: '',
+      style: '',
+      mood: '',
+      complexion: '',
+      intensity: 50,
       clothingType: '',
       brandPalette: ['#8B4513', '#A0522D', '#D2B48C'],
     },
@@ -90,11 +109,24 @@ export function BasicPromptForm() {
   });
 
   const progress = useMemo(() => {
-    return ((currentStep + 1) / formSteps.length) * 100;
+    // Group steps by title to calculate progress
+    const uniqueSteps = formSteps.reduce((acc, step) => {
+        if (!acc.some(s => s.title === step.title)) {
+            acc.push(step);
+        }
+        return acc;
+    }, [] as typeof formSteps);
+    
+    const currentTitle = formSteps[currentStep].title;
+    const currentUniqueStepIndex = uniqueSteps.findIndex(s => s.title === currentTitle);
+    
+    return ((currentUniqueStepIndex + 1) / uniqueSteps.length) * 100;
   }, [currentStep]);
+
 
   async function handleNext() {
     const fieldName = formSteps[currentStep].name;
+    // @ts-ignore
     const isValid = await form.trigger(fieldName);
     if (isValid) {
       setCurrentStep((prev) => prev + 1);
@@ -108,7 +140,13 @@ export function BasicPromptForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const result = await generateBasicPrompt(values as GenerateBasicPromptInput);
+      // The generateBasicPrompt expects ethnicity, so we map complexion to it.
+      const mappedValues = {
+        ...values,
+        ethnicity: values.complexion,
+      }
+      // @ts-ignore
+      const result = await generateBasicPrompt(mappedValues as GenerateBasicPromptInput);
       const params = new URLSearchParams();
       params.set('prompt', result.prompt);
       params.set('title', result.title);
@@ -132,86 +170,131 @@ export function BasicPromptForm() {
 
   const colorLabels = ['Primary', 'Secondary', 'Tertiary', 'Accent 1', 'Accent 2'];
 
+  const currentFormStep = formSteps[currentStep];
+
+  const groupedSteps: { [key: string]: (typeof formSteps[number])[] } = formSteps.reduce((acc, step) => {
+    if (!acc[step.title]) {
+        acc[step.title] = [];
+    }
+    acc[step.title].push(step);
+    return acc;
+  }, {});
+
+  const uniqueStepTitles = Object.keys(groupedSteps);
+  const currentTitle = formSteps[currentStep].title;
+  const currentUniqueStepIndex = uniqueStepTitles.indexOf(currentTitle);
+  const totalUniqueSteps = uniqueStepTitles.length;
+
+
   return (
     <div className="space-y-6">
        <Progress value={progress} className="w-full" />
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Advanced Mode</CardTitle>
-          <CardDescription>Generate a prompt with a few simple selections. ({currentStep + 1} / {formSteps.length})</CardDescription>
+          <CardTitle className="font-headline">{currentFormStep.title} ({currentUniqueStepIndex + 1} / {totalUniqueSteps})</CardTitle>
+          <CardDescription>{currentFormStep.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="min-h-[350px]">
-                {formSteps.map((step, index) => (
-                  <div key={step.name} className={currentStep === index ? 'block' : 'hidden'}>
-                    {step.type === 'multi-choice' && (
-                       <Controller
-                          control={form.control}
-                          name={step.name}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{step.label}</FormLabel>
-                              <FormControl>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {(step.options || []).map((option) => (
-                                        <MultiChoiceOption
-                                            key={option.value}
-                                            label={option.label}
-                                            image={option.image}
-                                            data-ai-hint={option.hint}
-                                            isSelected={field.value === option.value}
-                                            onSelect={() => field.onChange(option.value)}
-                                        />
-                                    ))}
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                    )}
-                    {step.type === 'color-picker' && (
-                        <FormItem>
-                            <FormLabel>{step.label}</FormLabel>
-                            <FormControl>
-                                <div className="space-y-4">
-                                    <div className="flex flex-row gap-2">
-                                    {fields.map((field, index) => (
-                                        <div key={field.id} className="relative flex-1">
-                                            <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
-                                            <Controller
-                                                control={form.control}
-                                                name={`brandPalette.${index}`}
-                                                render={({ field: colorField }) => (
-                                                    <ColorPicker
-                                                        background={colorField.value}
-                                                        onChange={colorField.onChange}
-                                                    />
-                                                )}
-                                            />
-                                             {index >= 3 && (
-                                                <Button type="button" variant="ghost" size="icon" className="absolute top-0 right-0 h-6 w-6" onClick={() => remove(index)}>
-                                                    <X className="h-4 w-4" />
-                                                </Button>
+                {Object.entries(groupedSteps).map(([title, steps]) => {
+                    const isActive = currentFormStep.title === title;
+                    return (
+                        <div key={title} className={isActive ? 'block' : 'hidden'}>
+                            <div className="space-y-8">
+                            {steps.map(step => (
+                                <div key={step.name}>
+                                    {step.type === 'multi-choice' && (
+                                        <Controller
+                                            control={form.control}
+                                            name={step.name as any}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
+                                                    <FormControl>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                            {(step.options || []).map((option) => (
+                                                                <MultiChoiceOption
+                                                                    key={option.value}
+                                                                    label={option.label}
+                                                                    description={option.description}
+                                                                    image={option.image}
+                                                                    data-ai-hint={option.hint}
+                                                                    isSelected={field.value === option.value}
+                                                                    onSelect={() => field.onChange(option.value)}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
                                             )}
-                                        </div>
-                                    ))}
-                                    </div>
-                                    {fields.length < 5 && (
-                                        <Button type="button" variant="outline" onClick={() => append('#000000')}>
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Add Accent Color
-                                        </Button>
+                                        />
+                                    )}
+                                     {step.type === 'slider' && (
+                                         <Controller
+                                            control={form.control}
+                                            name={step.name as any}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
+                                                    <FormControl>
+                                                        <Slider
+                                                            defaultValue={[field.value]}
+                                                            onValueChange={(value) => field.onChange(value[0])}
+                                                            max={100}
+                                                            step={1}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     )}
                                 </div>
-                            </FormControl>
-                             <FormMessage />
-                        </FormItem>
-                    )}
-                  </div>
-                ))}
+                            ))}
+                            </div>
+                        </div>
+                    )
+                })}
+                 {currentFormStep.type === 'color-picker' && (
+                    <FormItem>
+                        <FormControl>
+                            <div className="space-y-4">
+                                <div className="flex flex-row gap-2">
+                                {fields.map((field, index) => (
+                                    <div key={field.id} className="relative flex-1">
+                                        <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
+                                        <Controller
+                                            control={form.control}
+                                            name={`brandPalette.${index}`}
+                                            render={({ field: colorField }) => (
+                                                <ColorPicker
+                                                    background={colorField.value}
+                                                    onChange={colorField.onChange}
+                                                />
+                                            )}
+                                        />
+                                         {index >= 3 && (
+                                            <Button type="button" variant="ghost" size="icon" className="absolute top-0 right-0 h-6 w-6" onClick={() => remove(index)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                                </div>
+                                {fields.length < 5 && (
+                                    <Button type="button" variant="outline" onClick={() => append('#000000')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Accent Color
+                                    </Button>
+                                )}
+                            </div>
+                        </FormControl>
+                         <FormMessage />
+                    </FormItem>
+                )}
               </div>
 
               <div className="flex justify-between">
@@ -239,3 +322,4 @@ export function BasicPromptForm() {
     </div>
   );
 }
+
