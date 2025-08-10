@@ -23,6 +23,7 @@ const GenerateAdvancedPromptInputSchema = z.object({
 export type GenerateAdvancedPromptInput = z.infer<typeof GenerateAdvancedPromptInputSchema>;
 
 const GenerateAdvancedPromptOutputSchema = z.object({
+  title: z.string().describe('A short, catchy title for the generated prompt.'),
   prompt: z.string().describe('The generated prompt based on the inputs.'),
 });
 
@@ -36,7 +37,7 @@ const prompt = ai.definePrompt({
   name: 'generateAdvancedPromptPrompt',
   input: {schema: GenerateAdvancedPromptInputSchema},
   output: {schema: GenerateAdvancedPromptOutputSchema},
-  prompt: `You are an expert prompt generator for image generation models. Based on the user input, generate a detailed prompt. Use the following information to craft the perfect prompt. 
+  prompt: `You are an expert prompt generator for image generation models. Based on the user input, generate a detailed prompt and a short, catchy title for it. Use the following information to craft the perfect prompt.
 
 Morphology: {{{morphology}}}
 Uniformity: {{{uniformity}}}
@@ -45,7 +46,7 @@ Essence: {{{essence}}}
 Photography: {{{photography}}}
 Lighting: {{{lighting}}}
 
-Generated Prompt: `,
+Generate a title and a prompt.`,
 });
 
 const generateAdvancedPromptFlow = ai.defineFlow(

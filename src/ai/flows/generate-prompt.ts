@@ -22,6 +22,7 @@ const GenerateBasicPromptInputSchema = z.object({
 export type GenerateBasicPromptInput = z.infer<typeof GenerateBasicPromptInputSchema>;
 
 const GenerateBasicPromptOutputSchema = z.object({
+  title: z.string().describe('A short, catchy title for the generated prompt.'),
   prompt: z.string().describe('The generated prompt.'),
 });
 
@@ -35,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'generateBasicPromptPrompt',
   input: {schema: GenerateBasicPromptInputSchema},
   output: {schema: GenerateBasicPromptOutputSchema},
-  prompt: `Generate a prompt for an image generation model based on the following criteria:\n\nCommercial Objective: {{{commercialObjective}}}\nModel Gender: {{{gender}}}\nModel Ethnicity: {{{ethnicity}}}\nClothing Type: {{{clothingType}}}\nBrand Palette: {{{brandPalette}}}\n\nThe prompt should be detailed and specific, suitable for use with a generative AI model like Google Gemini. Focus on descriptive language that captures the essence of the desired image. The prompt should be less than 200 words.`,
+  prompt: `Generate a prompt and a short, catchy title for an image generation model based on the following criteria:\n\nCommercial Objective: {{{commercialObjective}}}\nModel Gender: {{{gender}}}\nModel Ethnicity: {{{ethnicity}}}\nClothing Type: {{{clothingType}}}\nBrand Palette: {{{brandPalette}}}\n\nThe prompt should be detailed and specific, suitable for use with a generative AI model like Google Gemini. Focus on descriptive language that captures the essence of the desired image. The prompt should be less than 200 words.`,
 });
 
 const generateBasicPromptFlow = ai.defineFlow(

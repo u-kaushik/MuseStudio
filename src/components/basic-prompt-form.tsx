@@ -108,7 +108,10 @@ export function BasicPromptForm() {
     setIsLoading(true);
     try {
       const result = await generateBasicPrompt(values as GenerateBasicPromptInput);
-      router.push(`/result?prompt=${encodeURIComponent(result.prompt)}`);
+      const params = new URLSearchParams();
+      params.set('prompt', result.prompt);
+      params.set('title', result.title);
+      router.push(`/result?${params.toString()}`);
     } catch (error) {
       console.error(error);
       toast({
