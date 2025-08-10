@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 import { WandSparkles, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -12,10 +13,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateBasicPrompt, type GenerateBasicPromptInput } from '@/ai/flows/generate-prompt';
-import { PromptOutput } from './prompt-output';
 import { MultiChoiceOption } from './multi-choice-option';
 import { Progress } from '@/components/ui/progress';
 import { ColorPicker } from './color-picker';
+import { GeneratingAnimation } from './generating-animation';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -65,10 +66,10 @@ const formSteps = [
 
 
 export function BasicPromptForm() {
-  const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -105,10 +106,9 @@ export function BasicPromptForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    setGeneratedPrompt(null);
     try {
       const result = await generateBasicPrompt(values as GenerateBasicPromptInput);
-      setGeneratedPrompt(result.prompt);
+      router.push(`/result?prompt=${encodeURIComponent(result.prompt)}`);
     } catch (error) {
       console.error(error);
       toast({
@@ -116,11 +116,14 @@ export function BasicPromptForm() {
         description: 'Failed to generate prompt. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
   }
   
+  if (isLoading) {
+    return <GeneratingAnimation />;
+  }
+
   const isLastStep = currentStep === formSteps.length - 1;
 
   const colorLabels = ['Primary', 'Secondary', 'Tertiary', 'Accent 1', 'Accent 2'];
@@ -229,8 +232,6 @@ export function BasicPromptForm() {
           </Form>
         </CardContent>
       </Card>
-
-      <PromptOutput isLoading={isLoading} prompt={generatedPrompt} />
     </div>
   );
 }

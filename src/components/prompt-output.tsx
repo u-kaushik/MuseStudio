@@ -8,10 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface PromptOutputProps {
   prompt: string | null;
-  isLoading: boolean;
 }
 
-export function PromptOutput({ prompt, isLoading }: PromptOutputProps) {
+export function PromptOutput({ prompt }: PromptOutputProps) {
   const [hasCopied, setHasCopied] = useState(false);
 
   const onCopy = () => {
@@ -24,9 +23,9 @@ export function PromptOutput({ prompt, isLoading }: PromptOutputProps) {
     }
   };
 
-  if (isLoading) {
+  if (!prompt) {
     return (
-      <Card className="mt-6">
+       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="font-headline">Generated Prompt</CardTitle>
         </CardHeader>
@@ -39,10 +38,6 @@ export function PromptOutput({ prompt, isLoading }: PromptOutputProps) {
         </CardContent>
       </Card>
     );
-  }
-
-  if (!prompt) {
-    return null;
   }
 
   return (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateAdvancedPrompt, type GenerateAdvancedPromptInput } from '@/ai/flows/generate-advanced-prompt';
-import { PromptOutput } from './prompt-output';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const formSchema = z.object({
@@ -25,9 +25,9 @@ const formSchema = z.object({
 });
 
 export function AdvancedPromptForm() {
-  const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,10 +43,9 @@ export function AdvancedPromptForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    setGeneratedPrompt(null);
     try {
       const result = await generateAdvancedPrompt(values as GenerateAdvancedPromptInput);
-      setGeneratedPrompt(result.prompt);
+      router.push(`/result?prompt=${encodeURIComponent(result.prompt)}`);
     } catch (error) {
       console.error(error);
       toast({
@@ -54,7 +53,6 @@ export function AdvancedPromptForm() {
         description: 'Failed to generate prompt. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
   }
@@ -132,8 +130,6 @@ export function AdvancedPromptForm() {
           </Form>
         </CardContent>
       </Card>
-      
-      <PromptOutput isLoading={isLoading} prompt={generatedPrompt} />
     </div>
   );
 }
