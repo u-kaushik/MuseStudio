@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { WandSparkles } from 'lucide-react';
+import { WandSparkles, ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -38,10 +38,19 @@ const ETHNICITIES = [
     { value: 'multiracial', label: 'Multiracial', image: 'https://placehold.co/600x400.png', hint: 'multiracial fashion' },
 ]
 
+const formSteps = [
+  { name: 'gender', type: 'multi-choice', label: 'Model Gender', options: GENDERS },
+  { name: 'ethnicity', type: 'multi-choice', label: 'Model Ethnicity', options: ETHNICITIES },
+  { name: 'clothingType', type: 'input', label: 'Clothing Type', placeholder: 'e.g., Silk evening gown' },
+  { name: 'brandPalette', type: 'input', label: 'Brand Palette', placeholder: 'e.g., Earthy tones, pastels' },
+] as const;
+
+
 export function BasicPromptForm() {
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,14 +63,21 @@ export function BasicPromptForm() {
     mode: 'onChange'
   });
 
-  const formValues = form.watch();
-
   const progress = useMemo(() => {
-    const totalFields = 4;
-    const filledFields = Object.values(formValues).filter(value => value && value.length > 0).length;
-    return (filledFields / totalFields) * 100;
-  }, [formValues]);
+    return ((currentStep + 1) / formSteps.length) * 100;
+  }, [currentStep]);
 
+  async function handleNext() {
+    const fieldName = formSteps[currentStep].name;
+    const isValid = await form.trigger(fieldName);
+    if (isValid) {
+      setCurrentStep((prev) => prev + 1);
+    }
+  }
+
+  function handleBack() {
+    setCurrentStep((prev) => prev - 1);
+  }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -80,6 +96,8 @@ export function BasicPromptForm() {
       setIsLoading(false);
     }
   }
+  
+  const isLastStep = currentStep === formSteps.length - 1;
 
   return (
     <div className="space-y-6">
@@ -87,93 +105,77 @@ export function BasicPromptForm() {
       <Card>
         <CardHeader>
           <CardTitle className="font-headline">Basic Mode</CardTitle>
-          <CardDescription>Generate a prompt with a few simple selections.</CardDescription>
+          <CardDescription>Generate a prompt with a few simple selections. ({currentStep + 1} / {formSteps.length})</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-               <Controller
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Model Gender</FormLabel>
-                      <FormControl>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {GENDERS.map((gender) => (
-                                <MultiChoiceOption
-                                    key={gender.value}
-                                    label={gender.label}
-                                    image={gender.image}
-                                    data-ai-hint={gender.hint}
-                                    isSelected={field.value === gender.value}
-                                    onSelect={() => field.onChange(gender.value)}
-                                />
-                            ))}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Controller
-                  control={form.control}
-                  name="ethnicity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Model Ethnicity</FormLabel>
-                      <FormControl>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {ETHNICITIES.map((ethnicity) => (
-                                <MultiChoiceOption
-                                    key={ethnicity.value}
-                                    label={ethnicity.label}
-                                    image={ethnicity.image}
-                                    data-ai-hint={ethnicity.hint}
-                                    isSelected={field.value === ethnicity.value}
-                                    onSelect={() => field.onChange(ethnicity.value)}
-                                />
-                            ))}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="clothingType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Clothing Type</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Silk evening gown" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="brandPalette"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Brand Palette</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Earthy tones, pastels" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="min-h-[250px]">
+                {formSteps.map((step, index) => (
+                  <div key={step.name} className={currentStep === index ? 'block' : 'hidden'}>
+                    {step.type === 'multi-choice' && (
+                       <Controller
+                          control={form.control}
+                          name={step.name}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{step.label}</FormLabel>
+                              <FormControl>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {(step.options || []).map((option) => (
+                                        <MultiChoiceOption
+                                            key={option.value}
+                                            label={option.label}
+                                            image={option.image}
+                                            data-ai-hint={option.hint}
+                                            isSelected={field.value === option.value}
+                                            onSelect={() => field.onChange(option.value)}
+                                        />
+                                    ))}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    )}
+                    {step.type === 'input' && (
+                       <FormField
+                          control={form.control}
+                          name={step.name}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{step.label}</FormLabel>
+                              <FormControl>
+                                <Input placeholder={step.placeholder} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    )}
+                  </div>
+                ))}
               </div>
-              <Button type="submit" disabled={isLoading}>
-                <WandSparkles className="mr-2 h-4 w-4" />
-                {isLoading ? 'Generating...' : 'Generate Prompt'}
-              </Button>
+
+              <div className="flex justify-between">
+                <Button type="button" variant="outline" onClick={handleBack} disabled={currentStep === 0}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                </Button>
+
+                {!isLastStep && (
+                  <Button type="button" onClick={handleNext}>
+                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+
+                {isLastStep && (
+                  <Button type="submit" disabled={isLoading}>
+                    <WandSparkles className="mr-2 h-4 w-4" />
+                    {isLoading ? 'Generating...' : 'Generate Prompt'}
+                  </Button>
+                )}
+              </div>
             </form>
           </Form>
         </CardContent>
