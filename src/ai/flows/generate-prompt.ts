@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,6 +18,10 @@ const GenerateBasicPromptInputSchema = z.object({
   ethnicity: z.string().describe("The model's ethnicity."),
   clothingType: z.string().describe("The type of clothing the model is wearing."),
   brandPalette: z.array(z.string()).describe('The brand palette to use.'),
+  style: z.string().describe('The brand style.'),
+  mood: z.string().describe('The brand mood.'),
+  intensity: z.number().describe('How closely to adhere to the prompt.'),
+  brandGuidelinesText: z.string().optional().describe('Textual brand guidelines.'),
 });
 
 export type GenerateBasicPromptInput = z.infer<typeof GenerateBasicPromptInputSchema>;
@@ -36,7 +41,21 @@ const prompt = ai.definePrompt({
   name: 'generateBasicPromptPrompt',
   input: {schema: GenerateBasicPromptInputSchema},
   output: {schema: GenerateBasicPromptOutputSchema},
-  prompt: `Generate a prompt and a short, catchy title for an image generation model based on the following criteria:\n\nCommercial Objective: {{{commercialObjective}}}\nModel Gender: {{{gender}}}\nModel Ethnicity: {{{ethnicity}}}\nClothing Type: {{{clothingType}}}\nBrand Palette: {{{brandPalette}}}\n\nThe prompt should be detailed and specific, suitable for use with a generative AI model like Google Gemini. Focus on descriptive language that captures the essence of the desired image. The prompt should be less than 200 words.`,
+  prompt: `Generate a prompt and a short, catchy title for an image generation model based on the following criteria:
+
+Commercial Objective: {{{commercialObjective}}}
+Model Gender: {{{gender}}}
+Model Ethnicity (Complexion): {{{ethnicity}}}
+Clothing Type: {{{clothingType}}}
+Brand Palette: {{{brandPalette}}}
+Style: {{{style}}}
+Mood: {{{mood}}}
+Intensity: {{{intensity}}}
+{{#if brandGuidelinesText}}
+Brand Vibe: {{{brandGuidelinesText}}}
+{{/if}}
+
+The prompt should be detailed and specific, suitable for use with a generative AI model like Google Gemini. Focus on descriptive language that captures the essence of the desired image. The prompt should be less than 200 words.`,
 });
 
 const generateBasicPromptFlow = ai.defineFlow(

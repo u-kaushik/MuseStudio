@@ -24,12 +24,12 @@ import { Textarea } from './ui/textarea';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
-  gender: z.string().min(1, 'Gender is required.'),
+  gender: z.string().default('female'), // Defaulting as step is removed
   style: z.string().min(1, 'Style is required.'),
   mood: z.string().min(1, 'Mood is required.'),
   complexion: z.string().min(1, 'Complexion is required.'),
   intensity: z.number().min(0).max(100),
-  clothingType: z.string().min(1, 'Clothing type is required.'),
+  clothingType: z.string().default('streetwear'), // Defaulting as step is removed
   brandPalette: z.array(z.string()).min(1, "Please select at least one color"),
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
@@ -39,12 +39,6 @@ const COMMERCIAL_OBJECTIVES = [
     { value: 'brand-awareness', label: 'Brand Awareness', description: 'Engage and attract a wide audience.', image: 'https://placehold.co/600x400.png', hint: 'brand campaign' },
     { value: 'product-listing', label: 'Product Listing (PLP)', description: 'Showcase products in a grid.', image: 'https://placehold.co/600x400.png', hint: 'product grid' },
     { value: 'product-detail', label: 'Product Detail (PDP)', description: 'Focus on a single product\'s features.', image: 'https://placehold.co/600x400.png', hint: 'product details' },
-];
-
-const GENDERS = [
-  { value: 'female', label: 'Female', description: 'Feminine styles and forms.', image: 'https://placehold.co/600x400.png', hint: 'female fashion' },
-  { value: 'male', label: 'Male', description: 'Masculine styles and forms.', image: 'https://placehold.co/600x400.png', hint: 'male fashion' },
-  { value: 'non-binary', label: 'Non-binary', description: 'Gender-neutral and androgynous styles.', image: 'https://placehold.co/600x400.png', hint: 'androgynous fashion' },
 ];
 
 const STYLES = [
@@ -65,15 +59,6 @@ const COMPLEXIONS = [
     { value: 'dark-complexion', label: 'Dark Complexion', description: 'Deep skin, black hair, brown eyes.', image: 'https://placehold.co/600x400.png', hint: 'dark complexion' },
 ];
 
-const CLOTHING_TYPES = [
-    { value: 'streetwear', label: 'Streetwear', description: 'Casual clothing of a style worn by urban youth.', image: 'https://placehold.co/600x400.png', hint: 'streetwear fashion' },
-    { value: 'formal', label: 'Formal Wear', description: 'Clothing suitable for formal events.', image: 'https://placehold.co/600x400.png', hint: 'formal fashion' },
-    { value: 'casual', label: 'Casual Wear', description: 'Everyday comfortable clothing.', image: 'https://placehold.co/600x400.png', hint: 'casual fashion' },
-    { value: 'sportswear', label: 'Sportswear', description: 'Clothing designed for sports or physical exercise.', image: 'https://placehold.co/600x400.png', hint: 'sportswear fashion' },
-    { value: 'evening-gown', label: 'Evening Gown', description: 'A long, elegant dress worn for formal evening events.', image: 'https://placehold.co/600x400.png', hint: 'evening gown' },
-    { value: 'business-suit', label: 'Business Suit', description: 'A formal suit for professional settings.', image: 'https://placehold.co/600x400.png', hint: 'business suit' },
-];
-
 const formSteps = [
   { name: 'commercialObjective', type: 'multi-choice', title: 'Step 1: Select Your Commercial Objective', description: 'Choose the primary goal for your visual content.', options: COMMERCIAL_OBJECTIVES },
   { name: 'brandPalette', type: 'color-picker', title: 'Step 2: Input your brand palette', description: 'Select up to five colours that represent your brand, upload a brand guideline PDF or describe your brand vibe in text. These selections shape the mood and tone of your AI model.' },
@@ -81,8 +66,6 @@ const formSteps = [
   { name: 'mood', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
   { name: 'complexion', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
   { name: 'intensity', type: 'slider', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
-  { name: 'gender', type: 'multi-choice', title: 'Step 4: Define Your Model', description: 'Select the gender that best represents your target audience.', options: GENDERS },
-  { name: 'clothingType', type: 'multi-choice', title: 'Step 5: Choose Clothing Type', description: 'Select the type of clothing your model will be wearing.', options: CLOTHING_TYPES },
 ] as const;
 
 
@@ -96,12 +79,12 @@ export function BasicPromptForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       commercialObjective: '',
-      gender: '',
+      gender: 'female',
       style: '',
       mood: '',
       complexion: '',
       intensity: 50,
-      clothingType: '',
+      clothingType: 'streetwear',
       brandPalette: ['#D2B48C', '#FFFFFF', '#000000'],
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
@@ -281,7 +264,10 @@ export function BasicPromptForm() {
                                             name={step.name as any}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
+                                                    <div className="flex justify-between items-center">
+                                                        {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
+                                                        <span className="text-sm text-muted-foreground">{field.value}</span>
+                                                    </div>
                                                     <FormControl>
                                                         <Slider
                                                             defaultValue={[field.value]}
@@ -290,6 +276,9 @@ export function BasicPromptForm() {
                                                             step={1}
                                                         />
                                                     </FormControl>
+                                                    <FormDescription>
+                                                        This determines how closely the result adheres to the prompt. Higher values are more pronounced.
+                                                    </FormDescription>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
