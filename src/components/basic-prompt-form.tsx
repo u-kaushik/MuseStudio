@@ -54,9 +54,9 @@ const STYLES = [
 ];
 
 const MOODS = [
-    { value: 'mystery-curiosity', label: 'Mystery & Curiosity', description: 'Create intrigue and spark curiosity.', image: 'https://placehold.co/600x400.png', hint: 'mysterious mood' },
-    { value: 'energy-excitement', label: 'Energy & Excitement', description: 'Ignite energy and excitement.', image: 'https://placehold.co/600x400.png', hint: 'energetic mood' },
-    { value: 'trust-sophistication', label: 'Trust & Sophistication', description: 'Project trust, calm and sophistication.', image: 'https://placehold.co/600x400.png', hint: 'sophisticated mood' },
+    { value: 'mystery-curiosity', label: 'Mystery & Curiosity', description: 'Create intrigue and spark curiosity.', image: 'https://placehold.co/600x400.png', hint: 'mysterious mood', compatibleStyles: ['classic-elegance', 'modern-minimal', 'dramatic-glamour'] },
+    { value: 'energy-excitement', label: 'Energy & Excitement', description: 'Ignite energy and excitement.', image: 'https://placehold.co/600x400.png', hint: 'energetic mood', compatibleStyles: ['dramatic-glamour'] },
+    { value: 'trust-sophistication', label: 'Trust & Sophistication', description: 'Project trust, calm and sophistication.', image: 'https://placehold.co/600x400.png', hint: 'sophisticated mood', compatibleStyles: ['classic-elegance', 'modern-minimal'] },
 ];
 
 const COMPLEXIONS = [
@@ -129,6 +129,17 @@ export function BasicPromptForm() {
     return ((currentUniqueStepIndex + 1) / uniqueSteps.length) * 100;
   }, [currentStep]);
 
+
+  const selectedStyle = form.watch('style');
+
+  const availableMoods = useMemo(() => {
+    if (!selectedStyle) return MOODS;
+    const filtered = MOODS.filter(mood => mood.compatibleStyles.includes(selectedStyle));
+    if (!filtered.some(mood => mood.value === form.getValues('mood'))) {
+        form.setValue('mood', '', { shouldValidate: true });
+    }
+    return filtered;
+  }, [selectedStyle, form]);
 
   async function handleNext() {
     const currentStepInfo = formSteps.find((_, index) => {
@@ -246,7 +257,7 @@ export function BasicPromptForm() {
                                                     {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
                                                     <FormControl>
                                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                            {(step.options || []).map((option) => (
+                                                            {(step.name === 'mood' ? availableMoods : (step.options || [])).map((option) => (
                                                                 <MultiChoiceOption
                                                                     key={option.value}
                                                                     label={option.label}
@@ -294,6 +305,7 @@ export function BasicPromptForm() {
                                                 {fields.map((field, index) => (
                                                     <div key={field.id} className="relative flex-1">
                                                         <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
+
                                                         <div className="flex items-center gap-2">
                                                             <Controller
                                                                 control={form.control}
@@ -392,3 +404,5 @@ export function BasicPromptForm() {
     </div>
   );
 }
+
+    
