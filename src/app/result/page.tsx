@@ -14,6 +14,9 @@ import { Icons } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/hooks/use-auth';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -55,7 +58,6 @@ function ResultContent() {
   return (
     <>
       <Progress value={100} className="w-full mb-6" />
-      <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -88,12 +90,25 @@ function ResultContent() {
             </Link>
           </Button>
         </CardFooter>
-      </Card>
     </>
   );
 }
 
 export default function ResultPage() {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-background">
        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
@@ -105,10 +120,22 @@ export default function ResultPage() {
            <Button variant="outline" size="sm">
               Upgrade
             </Button>
-          <Avatar>
-            <AvatarImage src="https://placehold.co/40x40.png" data-ai-hint="woman portrait" alt="User" />
-            <AvatarFallback>MU</AvatarFallback>
-          </Avatar>
+           <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="cursor-pointer">
+                  <AvatarImage src={user.photoURL || "https://placehold.co/40x40.png"} data-ai-hint="woman portrait" alt="User" />
+                  <AvatarFallback>{user.displayName?.charAt(0) || 'M'}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/#settings')}>Settings</DropdownMenuItem>
+                <DropdownMenuItem>Support</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </header>
       <main className="flex-1 p-4 sm:p-6 md:p-8">
