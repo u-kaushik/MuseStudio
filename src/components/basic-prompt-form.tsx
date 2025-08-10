@@ -1,27 +1,34 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { WandSparkles, ArrowLeft, ArrowRight } from 'lucide-react';
+import { WandSparkles, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateBasicPrompt, type GenerateBasicPromptInput } from '@/ai/flows/generate-prompt';
 import { PromptOutput } from './prompt-output';
 import { MultiChoiceOption } from './multi-choice-option';
 import { Progress } from '@/components/ui/progress';
+import { ColorPicker } from './color-picker';
 
 const formSchema = z.object({
+  commercialObjective: z.string().min(1, 'Commercial objective is required.'),
   gender: z.string().min(1, 'Gender is required.'),
   ethnicity: z.string().min(1, 'Ethnicity is required.'),
   clothingType: z.string().min(1, 'Clothing type is required.'),
-  brandPalette: z.string().min(1, 'Brand palette is required.'),
+  brandPalette: z.array(z.string()).min(3, 'At least three colors are required.'),
 });
+
+const COMMERCIAL_OBJECTIVES = [
+    { value: 'brand-awareness', label: 'Brand Awareness', image: 'https://placehold.co/600x400.png', hint: 'brand campaign' },
+    { value: 'product-listing', label: 'Product Listing (PLP)', image: 'https://placehold.co/600x400.png', hint: 'product grid' },
+    { value: 'product-detail', label: 'Product Detail (PDP)', image: 'https://placehold.co/600x400.png', hint: 'product details' },
+];
 
 const GENDERS = [
   { value: 'female', label: 'Female', image: 'https://placehold.co/600x400.png', hint: 'female fashion' },
@@ -38,11 +45,21 @@ const ETHNICITIES = [
     { value: 'multiracial', label: 'Multiracial', image: 'https://placehold.co/600x400.png', hint: 'multiracial fashion' },
 ]
 
+const CLOTHING_TYPES = [
+    { value: 'streetwear', label: 'Streetwear', image: 'https://placehold.co/600x400.png', hint: 'streetwear fashion' },
+    { value: 'formal', label: 'Formal Wear', image: 'https://placehold.co/600x400.png', hint: 'formal fashion' },
+    { value: 'casual', label: 'Casual Wear', image: 'https://placehold.co/600x400.png', hint: 'casual fashion' },
+    { value: 'sportswear', label: 'Sportswear', image: 'https://placehold.co/600x400.png', hint: 'sportswear fashion' },
+    { value: 'evening-gown', label: 'Evening Gown', image: 'https://placehold.co/600x400.png', hint: 'evening gown' },
+    { value: 'business-suit', label: 'Business Suit', image: 'https://placehold.co/600x400.png', hint: 'business suit' },
+];
+
 const formSteps = [
+  { name: 'commercialObjective', type: 'multi-choice', label: 'Commercial Objective', options: COMMERCIAL_OBJECTIVES },
   { name: 'gender', type: 'multi-choice', label: 'Model Gender', options: GENDERS },
   { name: 'ethnicity', type: 'multi-choice', label: 'Model Ethnicity', options: ETHNICITIES },
-  { name: 'clothingType', type: 'input', label: 'Clothing Type', placeholder: 'e.g., Silk evening gown' },
-  { name: 'brandPalette', type: 'input', label: 'Brand Palette', placeholder: 'e.g., Earthy tones, pastels' },
+  { name: 'clothingType', type: 'multi-choice', label: 'Clothing Type', options: CLOTHING_TYPES },
+  { name: 'brandPalette', type: 'color-picker', label: 'Brand Palette' },
 ] as const;
 
 
@@ -55,12 +72,18 @@ export function BasicPromptForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      commercialObjective: '',
       gender: '',
       ethnicity: '',
       clothingType: '',
-      brandPalette: '',
+      brandPalette: ['#8B4513', '#A0522D', '#D2B48C'],
     },
     mode: 'onChange'
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'brandPalette',
   });
 
   const progress = useMemo(() => {
@@ -110,7 +133,7 @@ export function BasicPromptForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="min-h-[250px]">
+              <div className="min-h-[350px]">
                 {formSteps.map((step, index) => (
                   <div key={step.name} className={currentStep === index ? 'block' : 'hidden'}>
                     {step.type === 'multi-choice' && (
@@ -139,20 +162,42 @@ export function BasicPromptForm() {
                           )}
                         />
                     )}
-                    {step.type === 'input' && (
-                       <FormField
-                          control={form.control}
-                          name={step.name}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{step.label}</FormLabel>
-                              <FormControl>
-                                <Input placeholder={step.placeholder} {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                    {step.type === 'color-picker' && (
+                        <FormItem>
+                            <FormLabel>{step.label}</FormLabel>
+                            <FormControl>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {fields.map((field, index) => (
+                                        <div key={field.id} className="relative">
+                                            <Controller
+                                                control={form.control}
+                                                name={`brandPalette.${index}`}
+                                                render={({ field: colorField }) => (
+                                                    <ColorPicker
+                                                        background={colorField.value}
+                                                        onChange={colorField.onChange}
+                                                    />
+                                                )}
+                                            />
+                                             {index >= 3 && (
+                                                <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => remove(index)}>
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    </div>
+                                    {fields.length < 5 && (
+                                        <Button type="button" variant="outline" onClick={() => append('#000000')}>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Add Accent Color
+                                        </Button>
+                                    )}
+                                </div>
+                            </FormControl>
+                             <FormMessage />
+                        </FormItem>
                     )}
                   </div>
                 ))}

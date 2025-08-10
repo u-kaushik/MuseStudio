@@ -12,10 +12,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateBasicPromptInputSchema = z.object({
+  commercialObjective: z.string().describe('The commercial objective of the campaign.'),
   gender: z.string().describe("The model's gender."),
   ethnicity: z.string().describe("The model's ethnicity."),
   clothingType: z.string().describe("The type of clothing the model is wearing."),
-  brandPalette: z.string().describe('The brand palette to use.'),
+  brandPalette: z.array(z.string()).describe('The brand palette to use.'),
 });
 
 export type GenerateBasicPromptInput = z.infer<typeof GenerateBasicPromptInputSchema>;
@@ -34,7 +35,7 @@ const prompt = ai.definePrompt({
   name: 'generateBasicPromptPrompt',
   input: {schema: GenerateBasicPromptInputSchema},
   output: {schema: GenerateBasicPromptOutputSchema},
-  prompt: `Generate a prompt for an image generation model based on the following criteria:\n\nModel Gender: {{{gender}}}\nModel Ethnicity: {{{ethnicity}}}\nClothing Type: {{{clothingType}}}\nBrand Palette: {{{brandPalette}}}\n\nThe prompt should be detailed and specific, suitable for use with a generative AI model like Google Gemini. Focus on descriptive language that captures the essence of the desired image. The prompt should be less than 200 words.`,
+  prompt: `Generate a prompt for an image generation model based on the following criteria:\n\nCommercial Objective: {{{commercialObjective}}}\nModel Gender: {{{gender}}}\nModel Ethnicity: {{{ethnicity}}}\nClothing Type: {{{clothingType}}}\nBrand Palette: {{{brandPalette}}}\n\nThe prompt should be detailed and specific, suitable for use with a generative AI model like Google Gemini. Focus on descriptive language that captures the essence of the desired image. The prompt should be less than 200 words.`,
 });
 
 const generateBasicPromptFlow = ai.defineFlow(
@@ -44,7 +45,10 @@ const generateBasicPromptFlow = ai.defineFlow(
     outputSchema: GenerateBasicPromptOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt({
+      ...input,
+      brandPalette: input.brandPalette.join(', '),
+    });
     return output!;
   }
 );
