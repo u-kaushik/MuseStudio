@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -136,7 +137,7 @@ export function BasicPromptForm() {
        <Progress value={progress} className="w-full" />
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Basic Mode</CardTitle>
+          <CardTitle className="font-headline">Advanced Mode</CardTitle>
           <CardDescription>Generate a prompt with a few simple selections. ({currentStep + 1} / {formSteps.length})</CardDescription>
         </CardHeader>
         <CardContent>

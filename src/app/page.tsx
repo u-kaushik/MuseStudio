@@ -12,19 +12,20 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Lock } from "lucide-react";
 
 function getInitialTab(tabParam: string | null) {
   if (tabParam === 'settings' || tabParam === 'advanced' || tabParam === 'basic') {
     return tabParam;
   }
-  return 'basic';
+  return 'advanced';
 }
 
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState('advanced');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -83,19 +84,22 @@ export default function Home() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-3">
-              <TabsTrigger value="basic">Basic Mode</TabsTrigger>
+              <TabsTrigger value="basic">
+                <Lock className="mr-2 h-4 w-4" />
+                Basic Mode
+              </TabsTrigger>
               <TabsTrigger value="advanced">Advanced Mode</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="basic" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <BasicPromptForm />
+              <AdvancedPromptForm />
             </div>
           </TabsContent>
           <TabsContent value="advanced" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <AdvancedPromptForm />
+              <BasicPromptForm />
             </div>
           </TabsContent>
           <TabsContent value="settings" className="mt-6">
