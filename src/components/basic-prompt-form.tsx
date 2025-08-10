@@ -19,6 +19,8 @@ import { Progress } from '@/components/ui/progress';
 import { ColorPicker } from './color-picker';
 import { GeneratingAnimation } from './generating-animation';
 import { Slider } from './ui/slider';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -28,7 +30,9 @@ const formSchema = z.object({
   complexion: z.string().min(1, 'Complexion is required.'),
   intensity: z.number().min(0).max(100),
   clothingType: z.string().min(1, 'Clothing type is required.'),
-  brandPalette: z.array(z.string()).min(3, 'At least three colors are required.'),
+  brandPalette: z.array(z.string()).min(1, "Please select at least one color"),
+  brandGuidelinesFile: z.any().optional(),
+  brandGuidelinesText: z.string().optional(),
 });
 
 const COMMERCIAL_OBJECTIVES = [
@@ -72,13 +76,13 @@ const CLOTHING_TYPES = [
 
 const formSteps = [
   { name: 'commercialObjective', type: 'multi-choice', title: 'Step 1: Select Your Commercial Objective', description: 'Choose the primary goal for your visual content.', options: COMMERCIAL_OBJECTIVES },
-  { name: 'gender', type: 'multi-choice', title: 'Step 2: Define Your Model', description: 'Select the gender that best represents your target audience.', options: GENDERS },
-  { name: 'style', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: STYLES, subCategory: 'Style' },
-  { name: 'mood', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
-  { name: 'complexion', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
-  { name: 'intensity', type: 'slider', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
-  { name: 'clothingType', type: 'multi-choice', title: 'Step 4: Choose Clothing Type', description: 'Select the type of clothing your model will be wearing.', options: CLOTHING_TYPES },
-  { name: 'brandPalette', type: 'color-picker', title: 'Step 5: Select Your Brand Palette', description: 'Choose a color palette that aligns with your brand identity.' },
+  { name: 'brandPalette', type: 'color-picker', title: 'Step 2: Input your brand palette', description: 'Select up to five colours that represent your brand, upload a brand guideline PDF or describe your brand vibe in text. These selections shape the mood and tone of your AI model.' },
+  { name: 'gender', type: 'multi-choice', title: 'Step 3: Define Your Model', description: 'Select the gender that best represents your target audience.', options: GENDERS },
+  { name: 'style', type: 'multi-choice', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: STYLES, subCategory: 'Style' },
+  { name: 'mood', type: 'multi-choice', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
+  { name: 'complexion', type: 'multi-choice', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
+  { name: 'intensity', type: 'slider', title: 'Step 4: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
+  { name: 'clothingType', type: 'multi-choice', title: 'Step 5: Choose Clothing Type', description: 'Select the type of clothing your model will be wearing.', options: CLOTHING_TYPES },
 ] as const;
 
 
@@ -98,7 +102,9 @@ export function BasicPromptForm() {
       complexion: '',
       intensity: 50,
       clothingType: '',
-      brandPalette: ['#8B4513', '#A0522D', '#D2B48C'],
+      brandPalette: ['#D2B48C', '#FFFFFF', '#000000'],
+      brandGuidelinesFile: null,
+      brandGuidelinesText: '',
     },
     mode: 'onChange'
   });
@@ -125,16 +131,36 @@ export function BasicPromptForm() {
 
 
   async function handleNext() {
-    const fieldName = formSteps[currentStep].name;
+    const currentStepInfo = formSteps.find((_, index) => {
+      const title = formSteps[index].title;
+      const currentTitle = formSteps[currentStep].title;
+      return title === currentTitle;
+    });
+  
+    if (!currentStepInfo) return;
+  
+    const stepsWithSameTitle = formSteps.filter(step => step.title === currentStepInfo.title);
+    const fieldNamesToValidate = stepsWithSameTitle.map(step => step.name);
+  
     // @ts-ignore
-    const isValid = await form.trigger(fieldName);
+    const isValid = await form.trigger(fieldNamesToValidate);
     if (isValid) {
-      setCurrentStep((prev) => prev + 1);
+      const lastIndexOfCurrentTitle = formSteps.map(s => s.title).lastIndexOf(currentStepInfo.title);
+      setCurrentStep(lastIndexOfCurrentTitle + 1);
     }
   }
 
   function handleBack() {
-    setCurrentStep((prev) => prev - 1);
+    const currentTitle = formSteps[currentStep].title;
+    const firstIndexOfCurrentTitle = formSteps.findIndex(s => s.title === currentTitle);
+    
+    if (firstIndexOfCurrentTitle > 0) {
+      const prevStepTitle = formSteps[firstIndexOfCurrentTitle - 1].title;
+      const firstIndexOfPrevStepTitle = formSteps.findIndex(s => s.title === prevStepTitle);
+      setCurrentStep(firstIndexOfPrevStepTitle);
+    } else {
+        setCurrentStep(0);
+    }
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -166,9 +192,16 @@ export function BasicPromptForm() {
     return <GeneratingAnimation />;
   }
 
-  const isLastStep = currentStep === formSteps.length - 1;
+  const uniqueStepTitles = formSteps.reduce((acc, step) => {
+    if (!acc.includes(step.title)) {
+        acc.push(step.title);
+    }
+    return acc;
+  }, [] as string[]);
+  
+  const isLastStep = uniqueStepTitles.indexOf(formSteps[currentStep].title) === uniqueStepTitles.length - 1;
 
-  const colorLabels = ['Primary', 'Secondary', 'Tertiary', 'Accent 1', 'Accent 2'];
+  const colorLabels = ['Primary Colour', 'Secondary Colour', 'Tertiary Colour', 'Accent Colour 1', 'Accent Colour 2'];
 
   const currentFormStep = formSteps[currentStep];
 
@@ -180,7 +213,6 @@ export function BasicPromptForm() {
     return acc;
   }, {});
 
-  const uniqueStepTitles = Object.keys(groupedSteps);
   const currentTitle = formSteps[currentStep].title;
   const currentUniqueStepIndex = uniqueStepTitles.indexOf(currentTitle);
   const totalUniqueSteps = uniqueStepTitles.length;
@@ -254,51 +286,89 @@ export function BasicPromptForm() {
                                     )}
                                 </div>
                             ))}
+                             {currentFormStep.type === 'color-picker' && (
+                                <div className="space-y-8">
+                                    <FormItem>
+                                        <FormControl>
+                                            <div className="flex flex-col md:flex-row gap-4">
+                                                {fields.map((field, index) => (
+                                                    <div key={field.id} className="relative flex-1">
+                                                        <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
+                                                        <div className="flex items-center gap-2">
+                                                            <Controller
+                                                                control={form.control}
+                                                                name={`brandPalette.${index}`}
+                                                                render={({ field: colorField }) => (
+                                                                    <ColorPicker
+                                                                        background={colorField.value}
+                                                                        onChange={colorField.onChange}
+                                                                    />
+                                                                )}
+                                                            />
+                                                            {index >= 3 && (
+                                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove(index)}>
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        {fields.length < 5 && (
+                                            <Button type="button" variant="outline" onClick={() => append('#000000')}>
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Add Accent Color
+                                            </Button>
+                                        )}
+                                        <FormMessage />
+                                    </FormItem>
+
+                                    <FormField
+                                        control={form.control}
+                                        name="brandGuidelinesFile"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Upload Brand Guidelines (PDF)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="file" accept=".pdf" onChange={(e) => field.onChange(e.target.files)} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="brandGuidelinesText"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Brand guidelines (optional text)</FormLabel>
+                                                <FormControl>
+                                                    <Textarea placeholder="Elegant, bold, sophisticated." {...field} />
+                                                </FormControl>
+                                                <FormDescription>
+                                                  Need inspiration? Try phrases like:
+                                                  <ul className="list-disc pl-5 mt-1">
+                                                    <li>"Timeless luxury with a contemporary edge"</li>
+                                                    <li>"Bold streetwear infused with youthful energy"</li>
+                                                    <li>"Elegant minimalism grounded in nature"</li>
+                                                  </ul>
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                              )}
                             </div>
                         </div>
                     )
                 })}
-                 {currentFormStep.type === 'color-picker' && (
-                    <FormItem>
-                        <FormControl>
-                            <div className="space-y-4">
-                                <div className="flex flex-row gap-2">
-                                {fields.map((field, index) => (
-                                    <div key={field.id} className="relative flex-1">
-                                        <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
-                                        <Controller
-                                            control={form.control}
-                                            name={`brandPalette.${index}`}
-                                            render={({ field: colorField }) => (
-                                                <ColorPicker
-                                                    background={colorField.value}
-                                                    onChange={colorField.onChange}
-                                                />
-                                            )}
-                                        />
-                                         {index >= 3 && (
-                                            <Button type="button" variant="ghost" size="icon" className="absolute top-0 right-0 h-6 w-6" onClick={() => remove(index)}>
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                                </div>
-                                {fields.length < 5 && (
-                                    <Button type="button" variant="outline" onClick={() => append('#000000')}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Add Accent Color
-                                    </Button>
-                                )}
-                            </div>
-                        </FormControl>
-                         <FormMessage />
-                    </FormItem>
-                )}
               </div>
 
               <div className="flex justify-between">
-                <Button type="button" variant="outline" onClick={handleBack} disabled={currentStep === 0}>
+                <Button type="button" variant="outline" onClick={handleBack} disabled={currentUniqueStepIndex === 0}>
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
 
