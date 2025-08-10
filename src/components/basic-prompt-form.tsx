@@ -8,6 +8,7 @@ import { WandSparkles, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { generateBasicPrompt, type GenerateBasicPromptInput } from '@/ai/flows/generate-prompt';
@@ -122,6 +123,8 @@ export function BasicPromptForm() {
   
   const isLastStep = currentStep === formSteps.length - 1;
 
+  const colorLabels = ['Primary', 'Secondary', 'Tertiary', 'Accent 1', 'Accent 2'];
+
   return (
     <div className="space-y-6">
        <Progress value={progress} className="w-full" />
@@ -167,9 +170,10 @@ export function BasicPromptForm() {
                             <FormLabel>{step.label}</FormLabel>
                             <FormControl>
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div className="flex flex-row gap-2">
                                     {fields.map((field, index) => (
-                                        <div key={field.id} className="relative">
+                                        <div key={field.id} className="relative flex-1">
+                                            <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
                                             <Controller
                                                 control={form.control}
                                                 name={`brandPalette.${index}`}
@@ -181,7 +185,7 @@ export function BasicPromptForm() {
                                                 )}
                                             />
                                              {index >= 3 && (
-                                                <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => remove(index)}>
+                                                <Button type="button" variant="ghost" size="icon" className="absolute top-0 right-0 h-6 w-6" onClick={() => remove(index)}>
                                                     <X className="h-4 w-4" />
                                                 </Button>
                                             )}
