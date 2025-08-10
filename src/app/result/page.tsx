@@ -108,6 +108,10 @@ export default function ResultPage() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
+  const navigateTo = (path: string) => {
+    router.push(path);
+  };
+
   const navigateToSettings = () => {
     router.push('/?tab=settings');
   }
@@ -133,6 +137,7 @@ export default function ResultPage() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigateTo('/brand-board')}>Brand Board</DropdownMenuItem>
                 <DropdownMenuItem onClick={navigateToSettings}>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -143,9 +148,11 @@ export default function ResultPage() {
       </header>
       <main className="flex-1 p-4 sm:p-6 md:p-8">
         <div className="mx-auto max-w-4xl">
-          <Suspense fallback={<GeneratingAnimation />}>
-            <ResultContent />
-          </Suspense>
+          <Card>
+            <Suspense fallback={<GeneratingAnimation />}>
+              <ResultContent />
+            </Suspense>
+          </Card>
         </div>
       </main>
     </div>

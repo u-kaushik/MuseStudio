@@ -10,7 +10,7 @@ import { SettingsPage } from "@/components/settings-page";
 import { Icons } from "@/components/icons";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Lock } from "lucide-react";
 
@@ -21,7 +21,7 @@ function getInitialTab(tabParam: string | null) {
   return 'advanced';
 }
 
-export function HomePageContent() {
+function HomePageContentComponent() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,12 +43,13 @@ export function HomePageContent() {
   }
   
   const handleTabChange = (value: string) => {
+    if (value === 'basic') return;
     setActiveTab(value);
     router.push(`/?tab=${value}`, { scroll: false });
   }
 
-  const navigateToSettings = () => {
-    handleTabChange('settings');
+  const navigateTo = (path: string) => {
+    router.push(path);
   }
 
   return (
@@ -72,7 +73,8 @@ export function HomePageContent() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={navigateToSettings}>Settings</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigateTo('/brand-board')}>Brand Board</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleTabChange('settings')}>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
@@ -84,7 +86,7 @@ export function HomePageContent() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-3">
-              <TabsTrigger value="basic" disabled>
+              <TabsTrigger value="basic" disabled className="cursor-not-allowed">
                 <Lock className="mr-2 h-4 w-4" />
                 Basic Mode
               </TabsTrigger>
@@ -93,9 +95,7 @@ export function HomePageContent() {
             </TabsList>
           </div>
           <TabsContent value="basic" className="mt-6">
-            <div className="mx-auto max-w-4xl">
-              <AdvancedPromptForm />
-            </div>
+             {/* This tab is locked */}
           </TabsContent>
           <TabsContent value="advanced" className="mt-6">
             <div className="mx-auto max-w-4xl">
@@ -111,4 +111,12 @@ export function HomePageContent() {
       </main>
     </div>
   );
+}
+
+export function HomePageContent() {
+  return (
+    <Suspense>
+      <HomePageContentComponent />
+    </Suspense>
+  )
 }
