@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,15 +11,25 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Bookmark, Heart, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 import { Icons } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
 
+type Prompt = {
+  id: string;
+  title: string;
+  date: string;
+  isFavorite: boolean;
+  isSaved: boolean;
+  prompt: string;
+};
+
 // Mock data - replace with actual data fetching
-const savedPrompts = [
-  { id: '1', title: 'Cyberpunk Street Fashion', date: '2023-10-27', isFavorite: true, isSaved: true, prompt: 'A full-body shot of a female model in a cyberpunk-style outfit...' },
-  { id: '2', title: 'Vintage Autumn Look', date: '2023-10-25', isFavorite: false, isSaved: true, prompt: 'A male model wearing a vintage tweed jacket in an autumn park...' },
-  { id: '3', 'title': 'Minimalist Activewear', date: '2023-10-22', isFavorite: true, isSaved: true, prompt: 'A non-binary model in minimalist, neutral-toned activewear...' },
+const savedPrompts: Prompt[] = [
+  { id: '1', title: 'Cyberpunk Street Fashion', date: '2023-10-27', isFavorite: true, isSaved: true, prompt: 'A full-body shot of a female model in a cyberpunk-style outfit, futuristic cityscape at night, neon lights, high-tech gear, shot on 70mm, f/2.8.' },
+  { id: '2', title: 'Vintage Autumn Look', date: '2023-10-25', isFavorite: false, isSaved: true, prompt: 'A male model wearing a vintage tweed jacket in an autumn park, golden hour lighting, soft shadows, warm color palette, shallow depth of field.' },
+  { id: '3', 'title': 'Minimalist Activewear', date: '2023-10-22', isFavorite: true, isSaved: true, prompt: 'A non-binary model in minimalist, neutral-toned activewear, clean studio background, geometric shapes, dynamic pose, bright, even lighting.' },
 ];
 
 const brandPalettes = [
@@ -31,12 +41,20 @@ const brandPalettes = [
 export default function BrandBoardPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth');
     }
   }, [user, loading, router]);
+  
+  const handleViewPrompt = (prompt: Prompt) => {
+    setSelectedPrompt(prompt);
+    setIsDialogOpen(true);
+  };
+
 
   if (loading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -127,7 +145,7 @@ export default function BrandBoardPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Prompt</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewPrompt(prompt)}>View Prompt</DropdownMenuItem>
                             <DropdownMenuItem>Remove Favorite</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
@@ -171,6 +189,25 @@ export default function BrandBoardPage() {
           </Card>
         </div>
       </main>
+
+       {selectedPrompt && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="font-headline text-2xl">{selectedPrompt.title}</DialogTitle>
+              <DialogDescription>
+                Saved on {selectedPrompt.date}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-foreground bg-muted p-4 rounded-md whitespace-pre-wrap">{selectedPrompt.prompt}</p>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
