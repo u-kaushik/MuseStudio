@@ -244,7 +244,7 @@ export function BasicPromptForm() {
                                      {step.type === 'slider' && (
                                          <Controller
                                             control={form.control}
-                                            name={step.name as any}
+                                            name="intensity"
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <div className="flex justify-between items-center">
@@ -260,7 +260,7 @@ export function BasicPromptForm() {
                                                         />
                                                     </FormControl>
                                                     <FormDescription>
-                                                        This determines how closely the result adheres to the prompt. Higher values are more pronounced.
+                                                      The higher the intensity, the stronger the nature of the adjectives.
                                                     </FormDescription>
                                                     <FormMessage />
                                                 </FormItem>
