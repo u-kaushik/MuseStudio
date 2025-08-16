@@ -221,10 +221,9 @@ export function AdvancedPromptForm() {
 
     if (step < TOTAL_STEPS) {
         const isValid = await form.trigger(fieldsToValidate);
-        if (!isValid) return;
-        setStep(prev => prev + 1);
-    } else {
-      await form.handleSubmit(onSubmit)();
+        if (isValid) {
+            setStep(prev => prev + 1);
+        }
     }
   };
 
@@ -708,3 +707,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
