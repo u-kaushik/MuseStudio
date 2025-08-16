@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,13 +15,29 @@ export function PromptOutput({ prompt }: PromptOutputProps) {
 
   const onCopy = () => {
     if (prompt) {
-      navigator.clipboard.writeText(prompt);
+      const textToCopy = prompt.replace(/{{|}}/g, '');
+      navigator.clipboard.writeText(textToCopy);
       setHasCopied(true);
       setTimeout(() => {
         setHasCopied(false);
       }, 2000);
     }
   };
+
+  const formattedPrompt = useMemo(() => {
+    if (!prompt) return null;
+    const parts = prompt.split(/({{.*?}})/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('{{') && part.endsWith('}}')) {
+        return (
+          <span key={i} className="text-red-500 font-semibold">
+            {part.slice(2, -2)}
+          </span>
+        );
+      }
+      return part;
+    });
+  }, [prompt]);
 
   if (!prompt) {
     return (
@@ -39,7 +56,7 @@ export function PromptOutput({ prompt }: PromptOutputProps) {
           <span className="sr-only">Copy prompt</span>
         </Button>
         <pre className="text-sm bg-muted rounded-md p-4 whitespace-pre-wrap font-body">
-          <code>{prompt}</code>
+          <code>{formattedPrompt}</code>
         </pre>
     </div>
   );
