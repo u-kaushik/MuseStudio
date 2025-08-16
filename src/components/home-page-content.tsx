@@ -14,14 +14,14 @@ function getInitialTab(tabParam: string | null) {
   if (tabParam === 'settings' || tabParam === 'advanced') {
     return tabParam;
   }
-  return 'advanced';
+  return 'basic';
 }
 
 function HomePageContentComponent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState('advanced');
+  const [activeTab, setActiveTab] = useState('basic');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -39,7 +39,6 @@ function HomePageContentComponent() {
   }
   
   const handleTabChange = (value: string) => {
-    if (value === 'basic') return;
     setActiveTab(value);
     router.push(`/?tab=${value}`, { scroll: false });
   }
@@ -48,8 +47,7 @@ function HomePageContentComponent() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-3">
-              <TabsTrigger value="basic" disabled className="cursor-not-allowed">
-                <Lock className="mr-2 h-4 w-4" />
+              <TabsTrigger value="basic">
                 Basic Mode
               </TabsTrigger>
               <TabsTrigger value="advanced">Advanced Mode</TabsTrigger>
@@ -57,11 +55,13 @@ function HomePageContentComponent() {
             </TabsList>
           </div>
           <TabsContent value="basic" className="mt-6">
-             {/* This tab is locked */}
+            <div className="mx-auto max-w-4xl">
+              <BasicPromptForm />
+            </div>
           </TabsContent>
           <TabsContent value="advanced" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <BasicPromptForm />
+              <AdvancedPromptForm />
             </div>
           </TabsContent>
           <TabsContent value="settings" className="mt-6">

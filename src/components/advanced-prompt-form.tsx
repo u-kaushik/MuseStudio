@@ -65,7 +65,7 @@ export function AdvancedPromptForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Basic Mode</CardTitle>
+          <CardTitle className="font-headline">Advanced Mode</CardTitle>
           <CardDescription>Craft a detailed prompt using the MUSE framework and technical settings.</CardDescription>
         </CardHeader>
         <CardContent>
