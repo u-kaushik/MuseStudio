@@ -11,7 +11,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 
 function getInitialTab(tabParam: string | null) {
-  if (tabParam === 'settings' || tabParam === 'advanced') {
+  if (tabParam === 'advanced') {
     return tabParam;
   }
   return 'basic';
@@ -43,15 +43,23 @@ function HomePageContentComponent() {
     router.push(`/?tab=${value}`, { scroll: false });
   }
 
+  const tabFromParams = searchParams.get('tab');
+  if (tabFromParams === 'settings') {
+    return (
+        <div className="mx-auto max-w-4xl">
+            <SettingsPage />
+        </div>
+    )
+  }
+
   return (
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
-            <TabsList className="grid w-full max-w-lg grid-cols-3">
+            <TabsList className="grid w-full max-w-lg grid-cols-2">
               <TabsTrigger value="basic">
                 Basic Mode
               </TabsTrigger>
               <TabsTrigger value="advanced">Advanced Mode</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="basic" className="mt-6">
@@ -62,11 +70,6 @@ function HomePageContentComponent() {
           <TabsContent value="advanced" className="mt-6">
             <div className="mx-auto max-w-4xl">
               <AdvancedPromptForm />
-            </div>
-          </TabsContent>
-          <TabsContent value="settings" className="mt-6">
-            <div className="mx-auto max-w-4xl">
-              <SettingsPage />
             </div>
           </TabsContent>
         </Tabs>
