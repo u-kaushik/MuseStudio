@@ -84,7 +84,7 @@ export function AnalyzeImageForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Basic Mode</CardTitle>
+          <CardTitle className="font-headline text-3xl">Basic Mode</CardTitle>
           <CardDescription>Upload an image to automatically generate a prompt based on the MUSE framework.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -137,3 +137,5 @@ export function AnalyzeImageForm() {
     </div>
   );
 }
+
+    

@@ -123,7 +123,11 @@ export function AdvancedPromptForm() {
   const nextStep = async () => {
     let fieldsToValidate: (keyof z.infer<typeof formSchema>)[] = [];
     if (step === 1) fieldsToValidate = ['commercialObjective'];
-    if (step === 2) fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
+    if (step === 2) {
+        const morphologyIsValid = await form.trigger(['faceShape', 'complexion', 'bodyShape']);
+        if (!morphologyIsValid) return;
+    }
+
 
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
@@ -141,7 +145,7 @@ export function AdvancedPromptForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Advanced Mode</CardTitle>
+          <CardTitle className="font-headline text-3xl">Advanced Mode</CardTitle>
           <CardDescription>Use the multi-step wizard to craft a detailed prompt for your campaign.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -319,3 +323,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
