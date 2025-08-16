@@ -259,7 +259,10 @@ export function AdvancedPromptForm() {
                                                         <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
                                                         <Label
                                                         htmlFor={option.value}
-                                                        className="relative flex flex-col rounded-lg border-2 bg-background p-4 hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                                                        className={cn(
+                                                            'relative flex flex-col rounded-lg border-2 bg-background p-4 cursor-pointer',
+                                                            'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
+                                                        )}
                                                         >
                                                             {field.value === option.value && (
                                                                 <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
@@ -329,7 +332,10 @@ export function AdvancedPromptForm() {
                                                         <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
                                                         <Label
                                                         htmlFor={option.value}
-                                                        className="relative flex flex-col items-center justify-center rounded-lg border-2 bg-background p-4 hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                                                        className={cn(
+                                                            'relative flex flex-col items-center justify-center rounded-lg border-2 bg-background p-4 cursor-pointer',
+                                                            'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
+                                                            )}
                                                         >
                                                             {field.value === option.value && (
                                                                 <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
@@ -482,42 +488,6 @@ export function AdvancedPromptForm() {
                                 )}
                             />
 
-                            {selectedPalette && (
-                                <FormField
-                                control={form.control}
-                                name="dominantColor"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabelBlack className="text-base font-semibold">Palette Color</FormLabelBlack>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a color from the palette" />
-                                        </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                        {selectedPalette.colors.map((color) => (
-                                            <SelectItem key={color} value={color}>
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                className="h-4 w-4 rounded-full border"
-                                                style={{ backgroundColor: color }}
-                                                />
-                                                <span>{color}</span>
-                                            </div>
-                                            </SelectItem>
-                                        ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormDescription>
-                                        Choose a color from your selected brand palette to be the dominant one.
-                                    </FormDescription>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                            )}
-                            
                             <FormField
                                 control={form.control}
                                 name="dominantColor"
