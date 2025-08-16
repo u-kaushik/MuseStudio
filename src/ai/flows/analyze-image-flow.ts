@@ -34,6 +34,7 @@ const analyzeImagePrompt = ai.definePrompt({
   name: 'analyzeImagePrompt',
   input: {schema: AnalyzeImageInputSchema},
   output: {schema: AnalyzeImageOutputSchema},
+  model: 'googleai/gemini-1.5-flash-latest',
   prompt: `You are an expert fashion prompt engineer. Analyze the provided image based on the MUSE framework (Morphology, Uniformity, Style, Essence).
   Based on your analysis, generate a detailed prompt to recreate a similar image.
   Identify specific attributes in the image that can be modified and wrap them in double curly brackets. For example, if the model has blue eyes, the prompt should contain '{{blue eyes}}'. Other examples could be '{{red silk dress}}' or '{{Parisian cafe}}'.
@@ -50,11 +51,7 @@ const analyzeImageFlow = ai.defineFlow(
     outputSchema: AnalyzeImageOutputSchema,
   },
   async input => {
-    const {output} = await ai.generate({
-      prompt: analyzeImagePrompt,
-      input: input,
-      model: 'googleai/gemini-1.5-flash-latest',
-    });
+    const {output} = await analyzeImagePrompt(input);
     return output!;
   }
 );
