@@ -5,8 +5,8 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { WandSparkles, Plus, X, Info } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { WandSparkles, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, useFormField } from '@/components/ui/form';
@@ -16,18 +16,11 @@ import { useToast } from '@/hooks/use-toast';
 import { generateBasicPrompt, type GenerateBasicPromptInput } from '@/ai/flows/generate-prompt';
 import { ColorPicker } from './color-picker';
 import { GeneratingAnimation } from './generating-animation';
-import { Slider } from './ui/slider';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { brandPalettes } from '@/app/dashboard/page';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { MultiChoiceOption } from './multi-choice-option';
 import { Switch } from './ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
-
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -42,6 +35,8 @@ const formSchema = z.object({
   brandPalette: z.array(z.string()).min(1, "Please select at least one color"),
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
+  dominantColor: z.string().optional(),
+  useBrandPalette: z.boolean().default(false),
 });
 
 const COMMERCIAL_OBJECTIVES = [
@@ -73,11 +68,18 @@ const COMPLEXIONS = [
     { value: 'dark-south-asian', label: 'Dark', subLabel: 'South Asian' },
 ];
 
+const STYLE_CATEGORIES = [
+    { value: 'basics', label: 'Basics' },
+    { value: 'formal', label: 'Formal' },
+    { value: 'athleisure', label: 'Athleisure' },
+    { value: 'outerwear', label: 'Outerwear' },
+]
+
 const FormLabelBlack = React.forwardRef<
   React.ElementRef<typeof Label>,
   React.ComponentPropsWithoutRef<typeof Label>
 >(({ className, ...props }, ref) => {
-  const { error, formItemId } = useFormField()
+  const { formItemId } = useFormField()
 
   return (
     <Label
@@ -111,9 +113,14 @@ export function AdvancedPromptForm() {
       style: '',
       mood: '',
       clothingType: '',
+      dominantColor: '#CDB385',
+      useBrandPalette: false,
     },
     mode: 'onTouched'
   });
+  
+  const watchUseBrandPalette = form.watch('useBrandPalette');
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const allFieldsValid = await form.trigger();
@@ -148,9 +155,20 @@ export function AdvancedPromptForm() {
   }
 
   const nextStep = async () => {
-    let fieldsToValidate: (keyof z.infer<typeof formSchema>)[] = [];
-    if (step === 1) {
-        fieldsToValidate = ['commercialObjective'];
+    let fieldsToValidate: (keyof z.infer<typeof formSchema>)[];
+    switch (step) {
+        case 1:
+            fieldsToValidate = ['commercialObjective'];
+            break;
+        case 2:
+            fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
+            break;
+        case 3:
+            fieldsToValidate = ['clothingType'];
+            break;
+        default:
+            fieldsToValidate = [];
+            break;
     }
 
     const isValid = await form.trigger(fieldsToValidate);
@@ -328,10 +346,88 @@ export function AdvancedPromptForm() {
                     </Card>
                 )}
 
+                {step === 3 && (
+                     <Card className="border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="font-headline">Step 3: Style</CardTitle>
+                            <CardDescription>Define the artistic direction of your visuals.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-8">
+                             <FormField
+                                control={form.control}
+                                name="clothingType"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabelBlack className="text-base font-semibold">Style Category</FormLabelBlack>
+                                        <FormControl>
+                                            <RadioGroup
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                                            >
+                                                {STYLE_CATEGORIES.map(option => (
+                                                    <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has-[:checked]:border-primary w-full cursor-pointer">
+                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
+                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer text-center w-full">
+                                                                    <p className="font-bold">{option.label}</p>
+                                                                </Label>
+                                                            </div>
+                                                        </FormControl>
+                                                    </FormItem>
+                                                ))}
+                                            </RadioGroup>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="dominantColor"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
+                                        <FormControl>
+                                            <ColorPicker
+                                                background={field.value!}
+                                                onChange={field.onChange}
+                                                className={cn(watchUseBrandPalette && 'opacity-50 pointer-events-none')}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="useBrandPalette"
+                                render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-base">Match Brand Palette</FormLabel>
+                                        <FormDescription>
+                                            Automatically use your primary brand color.
+                                        </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
+
 
               <div className="flex justify-between pt-4">
                   {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
-                  {step < 2 ? (
+                  {step < 3 ? (
                       <Button type="button" onClick={nextStep}>Next</Button>
                   ) : (
                     <Button type="submit" disabled={isLoading}>
