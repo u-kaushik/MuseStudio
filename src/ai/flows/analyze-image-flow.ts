@@ -22,7 +22,7 @@ export type AnalyzeImageInput = z.infer<typeof AnalyzeImageInputSchema>;
 
 const AnalyzeImageOutputSchema = z.object({
   title: z.string().describe('A short, catchy title for the generated prompt.'),
-  prompt: z.string().describe('The generated prompt with editable variables in double curly brackets.'),
+  prompt: z.string().describe('The final, generated prompt.'),
 });
 export type AnalyzeImageOutput = z.infer<typeof AnalyzeImageOutputSchema>;
 
@@ -41,8 +41,8 @@ const analyzeImageFlow = ai.defineFlow(
         model: 'googleai/gemini-1.5-flash-latest',
         prompt: [
             { text: `You are an expert fashion prompt engineer. Analyze the provided image based on the MUSE framework (Morphology, Uniformity, Style, Essence).
-  Based on your analysis, generate a detailed prompt to recreate a similar image.
-  Identify specific attributes in the image that can be modified and wrap them in double curly brackets. For example, if the model has blue eyes, the prompt should contain '{{blue eyes}}'. Other examples could be '{{red silk dress}}' or '{{Parisian cafe}}'.
+  Based on your analysis, generate a detailed, ready-to-use prompt to recreate a similar image.
+  The prompt should be a complete and polished sentence, without any placeholders or variables in curly brackets.
 
   Generate a title and a prompt.` },
             { media: { url: input.imageDataUri } },
