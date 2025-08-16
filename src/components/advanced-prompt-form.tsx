@@ -32,7 +32,7 @@ const formSchema = z.object({
   complexion: z.string().min(1, 'Complexion is required.'),
   bodyShape: z.string().min(1, "Body shape is required"),
   gender: z.string().default('female'),
-  clothingType: z.string().min(1, "Clothing type is required"),
+  clothingType: z.string().optional(),
   style: z.string().min(1, 'Style is required.'),
   mood: z.string().min(1, 'Mood is required.'),
   lighting: z.string().min(1, 'Lighting is required.'),
@@ -121,7 +121,6 @@ export function AdvancedPromptForm() {
       faceShape: '',
       complexion: '',
       bodyShape: '',
-      clothingType: '',
       style: '',
       mood: '',
       intensity: 50,
@@ -147,22 +146,13 @@ export function AdvancedPromptForm() {
   }, [watchBrandPalette, selectedPalette, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const allFieldsValid = await form.trigger();
-    if (!allFieldsValid) {
-        toast({
-            title: "Incomplete Form",
-            description: "Please fill out all required fields before generating.",
-            variant: "destructive"
-        });
-        return;
-    }
     setIsLoading(true);
     try {
        const mappedValues = {
         ...values,
         ethnicity: values.complexion,
         brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : [],
-        lighting: LIGHTING_LABELS[lightingValue] || 'Neutral',
+        lighting: values.lighting,
       }
       if (typeof values.brandPalette === 'string' && values.brandPalette.length > 0 && values.brandPalette !== 'none') {
         const paletteName = values.brandPalette;
@@ -258,12 +248,12 @@ export function AdvancedPromptForm() {
                                                    <div key={option.value}>
                                                         <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
                                                         <Label
-                                                        htmlFor={option.value}
-                                                        className={cn(
-                                                            'relative flex flex-col rounded-lg border-2 bg-background p-4 cursor-pointer',
-                                                            'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
-                                                        )}
-                                                        >
+                                                            htmlFor={option.value}
+                                                            className={cn(
+                                                                'relative flex flex-col rounded-lg border-2 bg-background p-4 cursor-pointer',
+                                                                'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
+                                                            )}
+                                                            >
                                                             {field.value === option.value && (
                                                                 <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
                                                                     <CheckCircle className="h-6 w-6" />
@@ -323,30 +313,30 @@ export function AdvancedPromptForm() {
                                             <FormLabelBlack className="text-base font-semibold">Complexion</FormLabelBlack>
                                             <FormControl>
                                                 <RadioGroup
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                                className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    className="grid grid-cols-2 md:grid-cols-3 gap-4"
                                                 >
-                                                {COMPLEXIONS.map((option) => (
-                                                     <div key={option.value}>
-                                                        <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
-                                                        <Label
-                                                        htmlFor={option.value}
-                                                        className={cn(
-                                                            'relative flex flex-col items-center justify-center rounded-lg border-2 bg-background p-4 cursor-pointer',
-                                                            'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
-                                                            )}
-                                                        >
-                                                            {field.value === option.value && (
-                                                                <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
-                                                                    <CheckCircle className="h-6 w-6" />
-                                                                </div>
-                                                            )}
-                                                            <span className="font-bold">{option.label}</span>
-                                                            <span className="text-muted-foreground">{option.subLabel}</span>
-                                                        </Label>
-                                                    </div>
-                                                ))}
+                                                    {COMPLEXIONS.map((option) => (
+                                                        <div key={option.value}>
+                                                            <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+                                                            <Label
+                                                                htmlFor={option.value}
+                                                                className={cn(
+                                                                    'relative flex flex-col items-center justify-center rounded-lg border-2 bg-background p-4 cursor-pointer',
+                                                                    'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
+                                                                )}
+                                                            >
+                                                                {field.value === option.value && (
+                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                        <CheckCircle className="h-6 w-6" />
+                                                                    </div>
+                                                                )}
+                                                                <span className="font-bold">{option.label}</span>
+                                                                <span className="text-muted-foreground">{option.subLabel}</span>
+                                                            </Label>
+                                                        </div>
+                                                    ))}
                                                 </RadioGroup>
                                             </FormControl>
                                             <FormMessage />
@@ -456,7 +446,7 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                             <FormField
+                            <FormField
                                 control={form.control}
                                 name="brandPalette"
                                 render={({ field }) => (
@@ -492,17 +482,34 @@ export function AdvancedPromptForm() {
                                 control={form.control}
                                 name="dominantColor"
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
-                                        <FormControl>
+                                <FormItem>
+                                    <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
+                                    <FormControl>
+                                        {selectedPalette ? (
+                                             <Select onValueChange={field.onChange} value={field.value}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a dominant color" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {selectedPalette.colors.map((color) => (
+                                                        <SelectItem key={color} value={color}>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="h-4 w-4 rounded-full border" style={{backgroundColor: color}} />
+                                                                <span>{color}</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
                                             <ColorPicker
                                                 background={field.value!}
                                                 onChange={field.onChange}
-                                                className={cn(!!selectedPalette && 'opacity-50 pointer-events-none')}
                                             />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
+                                        )}
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                                 )}
                             />
                         </CardContent>
@@ -546,17 +553,17 @@ export function AdvancedPromptForm() {
                                 <FormItem>
                                     <div className="flex justify-between items-center mb-2">
                                          <FormLabelBlack className="text-base font-semibold">Light Tone</FormLabelBlack>
-                                         <span className="text-sm text-muted-foreground">{LIGHTING_LABELS[lightingValue]}</span>
+                                         <span className="text-sm text-muted-foreground">{lightingValue in LIGHTING_LABELS ? LIGHTING_LABELS[lightingValue] : 'Neutral'}</span>
                                     </div>
                                     <FormControl>
                                         <Slider
-                                            defaultValue={[50]}
+                                            defaultValue={[lightingValue]}
                                             max={100}
                                             step={50}
                                             onValueChange={(value) => {
                                                 const singleValue = value[0];
                                                 setLightingValue(singleValue);
-                                                field.onChange(LIGHTING_LABELS[singleValue]);
+                                                field.onChange(LIGHTING_LABELS[singleValue] || 'Neutral');
                                             }}
                                         />
                                     </FormControl>
@@ -587,3 +594,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
