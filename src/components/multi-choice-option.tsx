@@ -35,4 +35,3 @@ export function MultiChoiceOption({ label, description, image, 'data-ai-hint': d
     </div>
   );
 }
-
