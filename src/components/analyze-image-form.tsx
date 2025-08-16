@@ -46,7 +46,7 @@ export function AnalyzeImageForm() {
     }
   };
 
-  const toBase64 = (file: File): Promise<string> =>
+  const toDataURL = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -58,7 +58,7 @@ export function AnalyzeImageForm() {
     setIsLoading(true);
     try {
       const file = values.image[0];
-      const imageDataUri = await toBase64(file);
+      const imageDataUri = await toDataURL(file);
       const result = await analyzeImageForPrompt({ imageDataUri });
 
       const params = new URLSearchParams();
@@ -124,10 +124,12 @@ export function AnalyzeImageForm() {
                 )}
               />
               
-              <Button type="submit" disabled={!preview || isLoading}>
-                <WandSparkles className="mr-2 h-4 w-4" />
-                {isLoading ? 'Analyzing...' : 'Generate Prompt'}
-              </Button>
+              <div className="flex justify-end pt-4">
+                  <Button type="submit" disabled={!preview || isLoading}>
+                    <WandSparkles className="mr-2 h-4 w-4" />
+                    {isLoading ? 'Analyzing...' : 'Generate Prompt'}
+                  </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
