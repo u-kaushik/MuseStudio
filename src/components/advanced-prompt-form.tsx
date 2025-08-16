@@ -162,25 +162,23 @@ export function AdvancedPromptForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-       const mappedValues = {
+        let brandPaletteColors: string[] = [];
+        if (values.brandPalette && values.brandPalette !== 'none') {
+            const selectedPalette = brandPalettes.find(p => p.name === values.brandPalette);
+            if (selectedPalette) {
+                brandPaletteColors = selectedPalette.colors;
+            }
+        } else if (values.dominantColor) {
+            brandPaletteColors = [values.dominantColor];
+        }
+
+       const mappedValues: GenerateBasicPromptInput = {
         ...values,
         ethnicity: values.complexion,
-        brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : [],
-      }
-      if (typeof values.brandPalette === 'string' && values.brandPalette.length > 0 && values.brandPalette !== 'none') {
-        const paletteName = values.brandPalette;
-        const selectedPalette = brandPalettes.find(p => p.name === paletteName);
-        if (selectedPalette) {
-            mappedValues.brandPalette = selectedPalette.colors;
-        } else {
-            mappedValues.brandPalette = [];
-        }
-      } else if (values.dominantColor) {
-        mappedValues.brandPalette = [values.dominantColor];
+        brandPalette: brandPaletteColors,
       }
 
-
-      const result = await generateBasicPrompt(mappedValues as GenerateBasicPromptInput);
+      const result = await generateBasicPrompt(mappedValues);
       const params = new URLSearchParams();
       params.set('prompt', result.prompt);
       params.set('title', result.title);
@@ -197,6 +195,8 @@ export function AdvancedPromptForm() {
   }
 
   const prevStep = () => setStep(prev => prev - 1);
+  const nextStep = () => setStep(prev => prev + 1);
+
   
   if (isLoading) {
     return <GeneratingAnimation />;
@@ -665,7 +665,7 @@ export function AdvancedPromptForm() {
               <div className="flex justify-between pt-4">
                   {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
                   {step < TOTAL_STEPS ? (
-                      <Button type="button" onClick={() => setStep(prev => prev + 1)}>Next</Button>
+                      <Button type="button" onClick={nextStep}>Next</Button>
                   ) : (
                     <Button type="submit" disabled={isLoading}>
                       <WandSparkles className="mr-2 h-4 w-4" />
@@ -680,3 +680,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
