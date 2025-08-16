@@ -21,6 +21,8 @@ import { MultiChoiceOption } from './multi-choice-option';
 import { Switch } from './ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { brandPalettes } from '@/app/dashboard/page';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -32,11 +34,10 @@ const formSchema = z.object({
   mood: z.string().min(1, 'Mood is required.'),
   intensity: z.number().min(0).max(100),
   clothingType: z.string().min(1, "Clothing type is required"),
-  brandPalette: z.array(z.string()).min(1, "Please select at least one color"),
+  brandPalette: z.array(z.string()).min(1, "Please select at least one color").or(z.string()),
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
   dominantColor: z.string().optional(),
-  useBrandPalette: z.boolean().default(false),
 });
 
 const COMMERCIAL_OBJECTIVES = [
@@ -107,19 +108,18 @@ export function AdvancedPromptForm() {
       complexion: '',
       bodyShape: '',
       intensity: 50,
-      brandPalette: ['#D2B48C', '#FFFFFF', '#000000'],
+      brandPalette: [],
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
       style: '',
       mood: '',
       clothingType: '',
       dominantColor: '#CDB385',
-      useBrandPalette: false,
     },
     mode: 'onTouched'
   });
   
-  const watchUseBrandPalette = form.watch('useBrandPalette');
+  const watchBrandPalette = form.watch('brandPalette');
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -137,7 +137,26 @@ export function AdvancedPromptForm() {
        const mappedValues = {
         ...values,
         ethnicity: values.complexion,
+        brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : values.brandPalette,
       }
+      if (typeof mappedValues.brandPalette === 'string') {
+        const paletteName = mappedValues.brandPalette;
+        const selectedPalette = brandPalettes.find(p => p.name === paletteName);
+        if (selectedPalette) {
+            mappedValues.brandPalette = selectedPalette.colors;
+        } else {
+            mappedValues.brandPalette = [];
+        }
+      }
+
+      if (values.dominantColor && (typeof watchBrandPalette === 'string' && watchBrandPalette.length > 0)) {
+         // A brand palette is selected, so we should use its colors.
+         // We can choose to use the first color as the dominant one, or pass the palette name
+      } else if (values.dominantColor) {
+        mappedValues.brandPalette = [values.dominantColor];
+      }
+
+
       const result = await generateBasicPrompt(mappedValues as GenerateBasicPromptInput);
       const params = new URLSearchParams();
       params.set('prompt', result.prompt);
@@ -164,7 +183,7 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['clothingType'];
+            fieldsToValidate = ['clothingType', 'style', 'mood'];
             break;
         default:
             fieldsToValidate = [];
@@ -393,30 +412,41 @@ export function AdvancedPromptForm() {
                                             <ColorPicker
                                                 background={field.value!}
                                                 onChange={field.onChange}
-                                                className={cn(watchUseBrandPalette && 'opacity-50 pointer-events-none')}
+                                                className={cn((typeof watchBrandPalette === 'string' && watchBrandPalette.length > 0) && 'opacity-50 pointer-events-none')}
                                             />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                             <FormField
+                            <FormField
                                 control={form.control}
-                                name="useBrandPalette"
+                                name="brandPalette"
                                 render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Match Brand Palette</FormLabel>
-                                        <FormDescription>
-                                            Automatically use your primary brand color.
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
+                                <FormItem>
+                                    <FormLabelBlack className="text-base font-semibold">Brand Palette</FormLabelBlack>
+                                    <Select onValueChange={field.onChange} defaultValue={typeof field.value === 'string' ? field.value : ''}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a brand palette" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="">None</SelectItem>
+                                            {brandPalettes.map((palette) => (
+                                                <SelectItem key={palette.name} value={palette.name}>
+                                                    <div className="flex items-center gap-2">
+                                                        {palette.colors.map(color => <div key={color} className="h-4 w-4 rounded-full border" style={{backgroundColor: color}} />)}
+                                                        <span>{palette.name}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>
+                                        Select a saved brand palette to automatically use its colors. This will override the dominant color selection.
+                                    </FormDescription>
+                                    <FormMessage />
                                 </FormItem>
                                 )}
                             />
@@ -443,3 +473,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
