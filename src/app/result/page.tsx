@@ -8,13 +8,16 @@ import { PromptOutput } from '@/components/prompt-output';
 import { GeneratingAnimation } from '@/components/generating-animation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Bookmark, Heart, Pen, Check } from 'lucide-react';
+import { ArrowLeft, Bookmark, Heart, Pen, Check, WandSparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
+import { generateImage } from '@/ai/flows/generate-image-flow';
+import { ImageGallery } from '@/components/image-gallery';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -24,6 +27,9 @@ function ResultContent() {
   const [title, setTitle] = useState(initialTitle || 'Untitled Prompt');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [date, setDate] = useState('');
+  const [images, setImages] = useState<{ src: string; alt: string }[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,6 +58,24 @@ function ResultContent() {
     toast({ title: 'Success', description: 'Prompt added to favorites!' });
   };
 
+  const handleGenerateImage = async () => {
+    if (!prompt) return;
+    setIsGenerating(true);
+    try {
+      const result = await generateImage({ prompt });
+      setImages([{ src: result.imageDataUri, alt: title }]);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate image. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
 
   return (
     <>
@@ -78,8 +102,35 @@ function ResultContent() {
               </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <PromptOutput prompt={prompt} />
+        <CardContent className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-lg font-headline mb-2">Your Generated Prompt</h3>
+                  <PromptOutput prompt={prompt} />
+                  <Button onClick={handleGenerateImage} disabled={isGenerating} className="mt-4">
+                    <WandSparkles className="mr-2"/>
+                    {isGenerating ? 'Generating...' : 'Generate Image'}
+                  </Button>
+                </div>
+                <div>
+                   <h3 className="text-lg font-headline mb-2">Generated Image</h3>
+                   {isGenerating && (
+                     <div className="flex flex-col space-y-3">
+                       <Skeleton className="h-[400px] w-full rounded-xl" />
+                       <div className="space-y-2">
+                         <Skeleton className="h-4 w-[250px]" />
+                         <Skeleton className="h-4 w-[200px]" />
+                       </div>
+                     </div>
+                   )}
+                   {!isGenerating && images.length === 0 && (
+                      <div className="flex flex-col items-center justify-center bg-muted rounded-lg h-[400px]">
+                        <p className="text-muted-foreground">Click "Generate Image" to see the result</p>
+                      </div>
+                   )}
+                   {images.length > 0 && <ImageGallery images={images} />}
+                </div>
+            </div>
         </CardContent>
         <CardFooter>
           <Button asChild variant="outline">
@@ -107,7 +158,7 @@ function ResultPageComponent() {
     }
 
     return (
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-6xl">
           <Card>
             <Suspense fallback={<GeneratingAnimation />}>
               <ResultContent />
