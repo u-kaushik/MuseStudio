@@ -136,7 +136,7 @@ export function AdvancedPromptForm() {
       brandPalette: 'none',
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
-      dominantColor: '#CDB385',
+      dominantColor: '',
       lighting: '',
       pose: '',
     },
@@ -219,9 +219,9 @@ export function AdvancedPromptForm() {
             break;
     }
 
-    if (step < TOTAL_STEPS) {
-        const isValid = await form.trigger(fieldsToValidate);
-        if (isValid) {
+    const isValid = await form.trigger(fieldsToValidate);
+    if (isValid) {
+        if (step < TOTAL_STEPS) {
             setStep(prev => prev + 1);
         }
     }
@@ -711,5 +711,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
