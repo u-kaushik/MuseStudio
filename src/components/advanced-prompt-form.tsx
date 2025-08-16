@@ -6,7 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { WandSparkles, Info } from 'lucide-react';
+import { WandSparkles, Info, CheckCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -311,16 +311,26 @@ export function AdvancedPromptForm() {
                                             className="grid grid-cols-2 md:grid-cols-3 gap-4"
                                             >
                                             {COMPLEXIONS.map((option) => (
-                                                <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
-                                                <FormControl>
-                                                    <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has[:checked]:border-primary w-full cursor-pointer">
-                                                    <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                    <Label htmlFor={option.value} className="font-normal cursor-pointer text-center">
-                                                        <p className="font-bold">{option.label}</p>
-                                                        <p className="text-muted-foreground">{option.subLabel}</p>
-                                                    </Label>
-                                                    </div>
-                                                </FormControl>
+                                                <FormItem key={option.value} className="flex-grow">
+                                                    <FormControl>
+                                                        <div 
+                                                            className={cn(
+                                                                'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
+                                                                field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                                                            )}
+                                                        >
+                                                            {field.value === option.value && (
+                                                                <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                    <CheckCircle className="h-6 w-6" />
+                                                                </div>
+                                                            )}
+                                                            <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
+                                                            <Label htmlFor={option.value} className="font-normal cursor-pointer">
+                                                                <p className="font-bold">{option.label}</p>
+                                                                <p className="text-muted-foreground">{option.subLabel}</p>
+                                                            </Label>
+                                                        </div>
+                                                    </FormControl>
                                                 </FormItem>
                                             ))}
                                             </RadioGroup>
@@ -546,3 +556,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
