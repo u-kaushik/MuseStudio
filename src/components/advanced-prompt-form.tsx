@@ -195,6 +195,9 @@ export function AdvancedPromptForm() {
         case 3:
             fieldsToValidate = ['style'];
             break;
+        case 4:
+            fieldsToValidate = ['mood', 'lighting'];
+            break;
         default:
             fieldsToValidate = [];
             break;
