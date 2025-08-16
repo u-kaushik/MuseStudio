@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -99,7 +99,7 @@ const FormLabelBlack = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(className)}
+      className={cn("text-black", className)}
       {...props}
     />
   )
@@ -121,13 +121,13 @@ export function AdvancedPromptForm() {
       faceShape: '',
       complexion: '',
       bodyShape: '',
+      clothingType: '',
+      style: '',
+      mood: '',
       intensity: 50,
       brandPalette: 'none',
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
-      style: '',
-      mood: '',
-      clothingType: '',
       dominantColor: '#CDB385',
       lighting: 'Neutral',
     },
@@ -138,7 +138,13 @@ export function AdvancedPromptForm() {
   const watchFaceShape = form.watch('faceShape');
   const watchComplexion = form.watch('complexion');
   const watchBodyShape = form.watch('bodyShape');
+  const selectedPalette = brandPalettes.find(p => p.name === watchBrandPalette);
 
+  useEffect(() => {
+    if (selectedPalette) {
+      form.setValue('dominantColor', selectedPalette.colors[0]);
+    }
+  }, [watchBrandPalette, selectedPalette, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const allFieldsValid = await form.trigger();
@@ -197,7 +203,7 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['style', 'clothingType', 'dominantColor'];
+            fieldsToValidate = ['style', 'clothingType'];
             break;
         case 4:
             fieldsToValidate = ['mood', 'lighting'];
@@ -249,28 +255,21 @@ export function AdvancedPromptForm() {
                                                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
                                             >
                                                 {COMMERCIAL_OBJECTIVES.map(option => (
-                                                    <FormItem key={option.value} className="flex-grow">
-                                                        <FormControl>
-                                                            <div 
-                                                                className={cn(
-                                                                    'relative rounded-lg p-4 cursor-pointer group border-2 bg-card',
-                                                                    field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                                                                )}
-                                                                onClick={() => field.onChange(option.value)}
-                                                            >
-                                                                {field.value === option.value && (
-                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
-                                                                        <CheckCircle className="h-6 w-6" />
-                                                                    </div>
-                                                                )}
-                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full text-left">
-                                                                    <p className="font-bold">{option.label}</p>
-                                                                    <p className="text-muted-foreground">{option.description}</p>
-                                                                </Label>
-                                                            </div>
-                                                        </FormControl>
-                                                    </FormItem>
+                                                   <div key={option.value}>
+                                                        <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+                                                        <Label
+                                                        htmlFor={option.value}
+                                                        className="relative flex flex-col rounded-lg border-2 bg-background p-4 hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                                                        >
+                                                            {field.value === option.value && (
+                                                                <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                    <CheckCircle className="h-6 w-6" />
+                                                                </div>
+                                                            )}
+                                                            <span className="font-bold">{option.label}</span>
+                                                            <span className="text-muted-foreground">{option.description}</span>
+                                                        </Label>
+                                                    </div>
                                                 ))}
                                             </RadioGroup>
                                         </FormControl>
@@ -326,28 +325,21 @@ export function AdvancedPromptForm() {
                                                 className="grid grid-cols-2 md:grid-cols-3 gap-4"
                                                 >
                                                 {COMPLEXIONS.map((option) => (
-                                                    <FormItem key={option.value} className="flex-grow">
-                                                        <FormControl>
-                                                            <div 
-                                                                className={cn(
-                                                                    'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
-                                                                    field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                                                                )}
-                                                                onClick={() => field.onChange(option.value)}
-                                                            >
-                                                                {field.value === option.value && (
-                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
-                                                                        <CheckCircle className="h-6 w-6" />
-                                                                    </div>
-                                                                )}
-                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
-                                                                    <p className="font-bold">{option.label}</p>
-                                                                    <p className="text-muted-foreground">{option.subLabel}</p>
-                                                                </Label>
-                                                            </div>
-                                                        </FormControl>
-                                                    </FormItem>
+                                                     <div key={option.value}>
+                                                        <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+                                                        <Label
+                                                        htmlFor={option.value}
+                                                        className="relative flex flex-col items-center justify-center rounded-lg border-2 bg-background p-4 hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                                                        >
+                                                            {field.value === option.value && (
+                                                                <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                    <CheckCircle className="h-6 w-6" />
+                                                                </div>
+                                                            )}
+                                                            <span className="font-bold">{option.label}</span>
+                                                            <span className="text-muted-foreground">{option.subLabel}</span>
+                                                        </Label>
+                                                    </div>
                                                 ))}
                                                 </RadioGroup>
                                             </FormControl>
@@ -458,24 +450,7 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="dominantColor"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
-                                        <FormControl>
-                                            <ColorPicker
-                                                background={field.value!}
-                                                onChange={field.onChange}
-                                                className={cn((typeof watchBrandPalette === 'string' && watchBrandPalette.length > 0 && watchBrandPalette !== 'none') && 'opacity-50 pointer-events-none')}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
+                             <FormField
                                 control={form.control}
                                 name="brandPalette"
                                 render={({ field }) => (
@@ -500,10 +475,64 @@ export function AdvancedPromptForm() {
                                         </SelectContent>
                                     </Select>
                                     <FormDescription>
-                                        Select a saved brand palette to automatically use its colors. This will override the dominant color selection.
+                                        Select a saved brand palette. This will influence the dominant color.
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
+                                )}
+                            />
+
+                            {selectedPalette && (
+                                <FormField
+                                control={form.control}
+                                name="dominantColor"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabelBlack className="text-base font-semibold">Palette Color</FormLabelBlack>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a color from the palette" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        {selectedPalette.colors.map((color) => (
+                                            <SelectItem key={color} value={color}>
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                className="h-4 w-4 rounded-full border"
+                                                style={{ backgroundColor: color }}
+                                                />
+                                                <span>{color}</span>
+                                            </div>
+                                            </SelectItem>
+                                        ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>
+                                        Choose a color from your selected brand palette to be the dominant one.
+                                    </FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            )}
+                            
+                            <FormField
+                                control={form.control}
+                                name="dominantColor"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
+                                        <FormControl>
+                                            <ColorPicker
+                                                background={field.value!}
+                                                onChange={field.onChange}
+                                                className={cn(!!selectedPalette && 'opacity-50 pointer-events-none')}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
                             />
                         </CardContent>
