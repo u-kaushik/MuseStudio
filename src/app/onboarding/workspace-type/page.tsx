@@ -28,8 +28,7 @@ export default function WorkspaceTypePage() {
 
   const handleContinue = () => {
     if (selectedType) {
-      // Here you would typically save the user's choice
-      console.log('Selected workspace type:', selectedType);
+      localStorage.setItem('workspaceType', selectedType);
       router.push('/');
     }
   };

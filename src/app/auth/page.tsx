@@ -14,7 +14,12 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/');
+      const workspaceType = localStorage.getItem('workspaceType');
+      if (workspaceType) {
+        router.push('/');
+      } else {
+        router.push('/onboarding/workspace-type');
+      }
     }
   }, [user, loading, router]);
   

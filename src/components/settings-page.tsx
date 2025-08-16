@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { useEffect, useState } from "react";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 const palettes = [
     { name: 'Earthy Tones', colors: '#8B4513, #A0522D, #D2B48C, #F5DEB3' },
@@ -27,6 +29,19 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function SettingsPage() {
     const { user } = useAuth();
+    const [workspaceType, setWorkspaceType] = useState('');
+
+    useEffect(() => {
+        const storedWorkspaceType = localStorage.getItem('workspaceType');
+        if (storedWorkspaceType) {
+            setWorkspaceType(storedWorkspaceType);
+        }
+    }, []);
+
+    const handleWorkspaceTypeChange = (value: string) => {
+        setWorkspaceType(value);
+        localStorage.setItem('workspaceType', value);
+    }
 
     if (!user) {
         return null;
@@ -72,7 +87,25 @@ export function SettingsPage() {
                             <Button variant="destructive" size="sm">Disconnect</Button>
                         </div>
                     </div>
+                </CardContent>
+            </Card>
 
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Workspace</CardTitle>
+                    <CardDescription>Manage your workspace settings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <RadioGroup value={workspaceType} onValueChange={handleWorkspaceTypeChange}>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="freelancer" id="freelancer" />
+                            <Label htmlFor="freelancer">Freelancer</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="fashion-brand" id="fashion-brand" />
+                            <Label htmlFor="fashion-brand">Fashion Brand</Label>
+                        </div>
+                    </RadioGroup>
                 </CardContent>
             </Card>
 
