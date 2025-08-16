@@ -94,7 +94,7 @@ export function AdvancedPromptForm() {
       mood: '',
       clothingType: '',
     },
-    mode: 'onChange'
+    mode: 'onTouched'
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -227,12 +227,27 @@ export function AdvancedPromptForm() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Complexion</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a complexion" /></SelectTrigger></FormControl>
-                                            <SelectContent>
-                                                {COMPLEXIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label} — {option.subLabel}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                            <RadioGroup
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                                            >
+                                            {COMPLEXIONS.map((option) => (
+                                                <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has-[:checked]:border-primary w-full cursor-pointer">
+                                                    <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
+                                                    <Label htmlFor={option.value} className="font-normal cursor-pointer text-center">
+                                                        <p className="font-bold">{option.label}</p>
+                                                        <p className="text-muted-foreground">{option.subLabel}</p>
+                                                    </Label>
+                                                    </div>
+                                                </FormControl>
+                                                </FormItem>
+                                            ))}
+                                            </RadioGroup>
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -291,7 +306,7 @@ export function AdvancedPromptForm() {
 
 
               <div className="flex justify-between pt-4">
-                  {step > 1 && <Button type="button" variant="outline" onClick={prevStep}>Back</Button>}
+                  {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
                   {step < 2 ? (
                       <Button type="button" onClick={nextStep}>Next</Button>
                   ) : (
@@ -308,4 +323,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
