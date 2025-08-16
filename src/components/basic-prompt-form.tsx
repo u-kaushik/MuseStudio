@@ -13,14 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { analyzeImageForPrompt, type AnalyzeImageInput } from '@/ai/flows/analyze-image-flow';
+import { analyzeImageForPrompt } from '@/ai/flows/analyze-image-flow';
 import { GeneratingAnimation } from './generating-animation';
 
 const formSchema = z.object({
   image: z.any().refine((files) => files?.length === 1, 'Image is required.'),
 });
 
-export function BasicPromptForm() {
+export function AnalyzeImageForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const { toast } = useToast();

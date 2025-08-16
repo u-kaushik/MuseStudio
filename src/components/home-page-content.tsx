@@ -2,7 +2,7 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BasicPromptForm } from "@/components/basic-prompt-form";
+import { AnalyzeImageForm } from "@/components/basic-prompt-form";
 import { AdvancedPromptForm } from "@/components/advanced-prompt-form";
 import { SettingsPage } from "@/components/settings-page";
 import { useAuth } from "@/hooks/use-auth";
@@ -56,7 +56,7 @@ function HomePageContentComponent() {
           </div>
           <TabsContent value="basic" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <BasicPromptForm />
+              <AnalyzeImageForm />
             </div>
           </TabsContent>
           <TabsContent value="advanced" className="mt-6">
