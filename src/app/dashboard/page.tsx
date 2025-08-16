@@ -94,14 +94,13 @@ const AccordionTrigger = React.forwardRef<
   <AccordionPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180",
-      "justify-start", 
+      "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg:last-child]:rotate-180",
+      "justify-start p-6", 
       className
     )}
     {...props}
   >
     <div className="flex-1 text-left">{children}</div>
-    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent" />
   </AccordionPrimitive.Trigger>
 ));
 AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName
@@ -171,7 +170,7 @@ function DashboardContent() {
         <Accordion type="multiple" defaultValue={['muse-launch', 'brand-details', 'clients', 'campaigns', 'saved-prompts', 'brand-palettes']} className="w-full space-y-4">
             <AccordionItem value="muse-launch" className="border rounded-lg bg-card">
                 <Card>
-                    <AccordionTrigger className="p-6">
+                    <AccordionTrigger>
                         <div className="flex items-center gap-4">
                             <GraduationCap className="h-8 w-8 text-accent" />
                             <div>
@@ -182,6 +181,7 @@ function DashboardContent() {
                                 <CardDescription>Create commercially ready AI fashion models</CardDescription>
                             </div>
                         </div>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent" />
                     </AccordionTrigger>
                     <AccordionContent className="p-6 pt-0">
                         {!hasLifetimeAccess && (
@@ -213,29 +213,26 @@ function DashboardContent() {
             {workspaceType === 'fashion-brand' && (
                 <AccordionItem value="brand-details" className="border rounded-lg bg-card">
                     <Card>
-                        <AccordionTrigger className="p-6">
-                            <div className="flex items-center justify-between w-full">
-                                <div>
-                                    <CardTitle>Your Brand</CardTitle>
-                                    <CardDescription>Manage your brand name, palette, and objective.</CardDescription>
-                                </div>
+                        <AccordionTrigger>
+                            <div className="flex-1 text-left">
+                                <CardTitle>Your Brand</CardTitle>
+                                <CardDescription>Manage your brand name, palette, and objective.</CardDescription>
                             </div>
+                            <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                                <DialogTrigger asChild>
+                                     <Button onClick={(e) => e.stopPropagation()}><Building className="mr-2" /> {brand ? 'Edit Brand' : 'Add Brand'}</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>{brand ? 'Edit Your Brand Details' : 'Add Your Brand Details'}</DialogTitle>
+                                        <DialogDescription>{brand ? 'Update the details for your brand.' : 'Enter the details for your brand.'}</DialogDescription>
+                                    </DialogHeader>
+                                    <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} initialData={brand}/>
+                                </DialogContent>
+                            </Dialog>
+                             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent ml-2" />
                         </AccordionTrigger>
                         <AccordionContent className="p-6 pt-0">
-                             {!brand && (
-                                <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button><Building className="mr-2" /> Add Brand Details</Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Add Your Brand Details</DialogTitle>
-                                            <DialogDescription>Enter the details for your brand.</DialogDescription>
-                                        </DialogHeader>
-                                        <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} />
-                                    </DialogContent>
-                                </Dialog>
-                            )}
                              {brand ? (
                                 <div className="space-y-4">
                                 <div>
@@ -250,18 +247,6 @@ function DashboardContent() {
                                     <h4 className="font-semibold">Commercial Objective</h4>
                                     <p>{brand.commercialObjective}</p>
                                 </div>
-                                <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline">Edit Brand Details</Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Edit Your Brand Details</DialogTitle>
-                                            <DialogDescription>Update the details for your brand.</DialogDescription>
-                                        </DialogHeader>
-                                        <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} initialData={brand}/>
-                                    </DialogContent>
-                                </Dialog>
                                 </div>
                             ) : (
                                 <p className="text-center text-muted-foreground py-8">You haven't added your brand details yet.</p>
@@ -274,18 +259,14 @@ function DashboardContent() {
             {workspaceType === 'freelancer' && (
                 <AccordionItem value="clients" className="border rounded-lg bg-card">
                     <Card>
-                         <AccordionTrigger className="p-6">
-                            <div className="flex justify-between items-center w-full">
-                                <div>
-                                    <CardTitle>Clients</CardTitle>
-                                    <CardDescription>Manage your clients and their brand assets.</CardDescription>
-                                </div>
+                         <AccordionTrigger>
+                            <div className="flex-1 text-left">
+                                <CardTitle>Clients</CardTitle>
+                                <CardDescription>Manage your clients and their brand assets.</CardDescription>
                             </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-6 pt-0 space-y-4">
-                             <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                            <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
                                 <DialogTrigger asChild>
-                                    <Button><UserPlus className="mr-2" /> Add Client</Button>
+                                    <Button onClick={(e) => e.stopPropagation()}><UserPlus className="mr-2" /> Add Client</Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
@@ -295,6 +276,9 @@ function DashboardContent() {
                                     <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} />
                                 </DialogContent>
                             </Dialog>
+                            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent ml-2" />
+                        </AccordionTrigger>
+                        <AccordionContent className="p-6 pt-0 space-y-4">
                            {clients.filter(c => c.id !== 'fashion-brand-details').length > 0 ? (
                             <Table>
                                 <TableHeader>
@@ -330,18 +314,14 @@ function DashboardContent() {
             
             <AccordionItem value="campaigns" className="border rounded-lg bg-card">
                  <Card>
-                    <AccordionTrigger className="p-6">
-                        <div className="flex justify-between items-center w-full">
-                            <div>
-                                <CardTitle>Campaigns</CardTitle>
-                                <CardDescription>Manage your active and upcoming campaigns.</CardDescription>
-                            </div>
+                    <AccordionTrigger>
+                        <div className="flex-1 text-left">
+                            <CardTitle>Campaigns</CardTitle>
+                            <CardDescription>Manage your active and upcoming campaigns.</CardDescription>
                         </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="p-6 pt-0 space-y-4">
                         <Dialog open={isAddCampaignOpen} onOpenChange={setAddCampaignOpen}>
                             <DialogTrigger asChild>
-                                <Button><PlusCircle className="mr-2" /> Add Campaign</Button>
+                                <Button onClick={(e) => e.stopPropagation()}><PlusCircle className="mr-2" /> Add Campaign</Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
@@ -351,6 +331,9 @@ function DashboardContent() {
                                 <AddCampaignForm clients={clients} onSubmit={handleAddCampaign} onCancel={() => setAddCampaignOpen(false)} />
                             </DialogContent>
                         </Dialog>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent ml-2" />
+                    </AccordionTrigger>
+                    <AccordionContent className="p-6 pt-0 space-y-4">
                         {campaigns.length > 0 ? (
                             <Table>
                                 <TableHeader>
@@ -387,11 +370,12 @@ function DashboardContent() {
             
             <AccordionItem value="saved-prompts" className="border rounded-lg bg-card">
                  <Card>
-                    <AccordionTrigger className="p-6">
-                         <div>
+                    <AccordionTrigger>
+                         <div className="flex-1 text-left">
                             <CardTitle>Saved Prompts</CardTitle>
                             <CardDescription>All your saved and favorited prompts.</CardDescription>
                         </div>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent" />
                     </AccordionTrigger>
                     <AccordionContent className="p-6 pt-0">
                          <Table>
@@ -443,16 +427,15 @@ function DashboardContent() {
             
             <AccordionItem value="brand-palettes" className="border rounded-lg bg-card">
                  <Card>
-                    <AccordionTrigger className="p-6">
-                        <div className="flex justify-between items-center w-full">
-                            <div>
-                                <CardTitle>Brand Palettes</CardTitle>
-                                <CardDescription>Your saved color palettes for consistent branding.</CardDescription>
-                            </div>
+                    <AccordionTrigger>
+                        <div className="flex-1 text-left">
+                            <CardTitle>Brand Palettes</CardTitle>
+                            <CardDescription>Your saved color palettes for consistent branding.</CardDescription>
                         </div>
+                        <Button onClick={(e) => e.stopPropagation()}>Add New Palette</Button>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent ml-2" />
                     </AccordionTrigger>
                     <AccordionContent className="p-6 pt-0 space-y-4">
-                        <Button>Add New Palette</Button>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {brandPalettes.map((palette) => (
                                 <Card key={palette.name}>
