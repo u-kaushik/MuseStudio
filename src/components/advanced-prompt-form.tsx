@@ -193,19 +193,20 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['style', 'clothingType'];
-            break;
-        case 4:
-            fieldsToValidate = ['mood', 'lighting'];
+            fieldsToValidate = ['style'];
             break;
         default:
             fieldsToValidate = [];
             break;
     }
 
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-      setStep(prev => prev + 1);
+    if (fieldsToValidate.length > 0) {
+        const isValid = await form.trigger(fieldsToValidate);
+        if (!isValid) return;
+    }
+
+    if (step < 4) {
+        setStep(prev => prev + 1);
     }
   };
 
@@ -219,7 +220,7 @@ export function AdvancedPromptForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Advanced Mode</CardTitle>
+          <CardTitle className="font-headline text-4xl">Advanced Mode</CardTitle>
           <CardDescription>Use the multi-step wizard to craft a detailed prompt for your campaign.</CardDescription>
         </CardHeader>
         <CardContent>
