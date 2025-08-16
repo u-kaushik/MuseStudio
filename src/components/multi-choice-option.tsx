@@ -14,7 +14,7 @@ export function MultiChoiceOption({ label, description, isSelected, onSelect }: 
     <div
       className={cn(
         'relative rounded-lg p-4 cursor-pointer group border-2 bg-card',
-        isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+        isSelected ? 'border-primary bg-accent' : 'border-border'
       )}
       onClick={onSelect}
     >

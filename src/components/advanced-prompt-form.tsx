@@ -250,8 +250,8 @@ export function AdvancedPromptForm() {
                                                         <Label
                                                             htmlFor={option.value}
                                                             className={cn(
-                                                                'relative flex flex-col rounded-lg border-2 bg-background p-4 cursor-pointer',
-                                                                'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
+                                                                'relative flex flex-col rounded-lg border-2 p-4 cursor-pointer',
+                                                                'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent'
                                                             )}
                                                             >
                                                             {field.value === option.value && (
@@ -323,8 +323,8 @@ export function AdvancedPromptForm() {
                                                             <Label
                                                                 htmlFor={option.value}
                                                                 className={cn(
-                                                                    'relative flex flex-col items-center justify-center rounded-lg border-2 bg-background p-4 cursor-pointer',
-                                                                    'hover:bg-accent/50 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary'
+                                                                    'relative flex flex-col items-center justify-center rounded-lg border-2 p-4 cursor-pointer',
+                                                                    'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent'
                                                                 )}
                                                             >
                                                                 {field.value === option.value && (
@@ -421,19 +421,21 @@ export function AdvancedPromptForm() {
                                                     <FormItem key={option.value} className="flex-grow">
                                                         <FormControl>
                                                              <div 
-                                                                className={cn(
-                                                                    'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
-                                                                    field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                                                                )}
-                                                                onClick={() => field.onChange(option.value)}
+                                                                className="relative"
                                                             >
-                                                                {field.value === option.value && (
-                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
-                                                                        <CheckCircle className="h-6 w-6" />
-                                                                    </div>
-                                                                )}
-                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
+                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only peer" />
+                                                                <Label 
+                                                                    htmlFor={option.value} 
+                                                                    className={cn(
+                                                                        'rounded-lg p-4 cursor-pointer group border-2 bg-card text-center block',
+                                                                        'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent'
+                                                                    )}
+                                                                >
+                                                                    {field.value === option.value && (
+                                                                        <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                            <CheckCircle className="h-6 w-6" />
+                                                                        </div>
+                                                                    )}
                                                                     <p className="font-bold">{option.label}</p>
                                                                 </Label>
                                                             </div>
@@ -594,5 +596,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
