@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {generate} from 'genkit';
 import {z} from 'genkit';
 
 const AnalyzeImageInputSchema = z.object({
@@ -30,7 +31,7 @@ export async function analyzeImageForPrompt(input: AnalyzeImageInput): Promise<A
   return analyzeImageFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const analyzeImagePrompt = ai.definePrompt({
   name: 'analyzeImagePrompt',
   input: {schema: AnalyzeImageInputSchema},
   output: {schema: AnalyzeImageOutputSchema},
@@ -50,7 +51,11 @@ const analyzeImageFlow = ai.defineFlow(
     outputSchema: AnalyzeImageOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input, {model: 'googleai/gemini-pro-vision'});
-    return output!;
+    const {output} = await generate({
+      prompt: analyzeImagePrompt,
+      input: input,
+      model: 'googleai/gemini-pro-vision',
+    });
+    return output;
   }
 );
