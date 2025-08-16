@@ -1,17 +1,13 @@
 
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BasicPromptForm } from "@/components/basic-prompt-form";
 import { AdvancedPromptForm } from "@/components/advanced-prompt-form";
 import { SettingsPage } from "@/components/settings-page";
-import { Icons } from "@/components/icons";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Lock } from "lucide-react";
 
 function getInitialTab(tabParam: string | null) {
@@ -22,7 +18,7 @@ function getInitialTab(tabParam: string | null) {
 }
 
 function HomePageContentComponent() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('advanced');
@@ -48,41 +44,7 @@ function HomePageContentComponent() {
     router.push(`/?tab=${value}`, { scroll: false });
   }
 
-  const navigateTo = (path: string) => {
-    router.push(path);
-  }
-
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-background">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
-        <div className="flex items-center gap-2 font-semibold">
-          <Icons.logo className="h-6 w-6 text-accent" />
-          <h1 className="text-xl font-headline">Muse Studio</h1>
-        </div>
-        <div className="ml-auto flex items-center gap-4">
-           <Button variant="outline" size="sm">
-              Upgrade
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={user.photoURL || "https://placehold.co/40x40.png"} data-ai-hint="woman portrait" alt="User" />
-                  <AvatarFallback>{user.displayName?.charAt(0) || 'M'}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigateTo('/dashboard')}>Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleTabChange('settings')}>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </header>
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-3">
@@ -108,8 +70,6 @@ function HomePageContentComponent() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
-    </div>
   );
 }
 

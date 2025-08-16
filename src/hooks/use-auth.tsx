@@ -25,9 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
       if (user) {
         const workspaceType = localStorage.getItem('workspaceType');
-        if (workspaceType) {
-          router.push('/dashboard');
-        } else {
+        if (!workspaceType) {
           router.push('/onboarding/workspace-type');
         }
       }

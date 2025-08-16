@@ -10,13 +10,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Bookmark, Heart, Pen, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Icons } from '@/components/icons';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
+import { AppLayout } from '@/components/app-layout';
 
 function ResultContent() {
   const searchParams = useSearchParams();
@@ -94,59 +92,21 @@ function ResultContent() {
   );
 }
 
-export default function ResultPage() {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
+function ResultPageComponent() {
+    const { user, loading } = useAuth();
+    const router = useRouter();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth');
+    useEffect(() => {
+        if (!loading && !user) {
+        router.push('/auth');
+        }
+    }, [user, loading, router]);
+
+    if (loading || !user) {
+        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
     }
-  }, [user, loading, router]);
 
-  if (loading || !user) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
-
-  const navigateTo = (path: string) => {
-    router.push(path);
-  };
-
-  const navigateToSettings = () => {
-    router.push('/?tab=settings');
-  }
-
-  return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-background">
-       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Icons.logo className="h-6 w-6 text-accent" />
-          <h1 className="text-xl font-headline">Muse Studio</h1>
-        </Link>
-        <div className="ml-auto flex items-center gap-4">
-           <Button variant="outline" size="sm">
-              Upgrade
-            </Button>
-           <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={user.photoURL || "https://placehold.co/40x40.png"} data-ai-hint="woman portrait" alt="User" />
-                  <AvatarFallback>{user.displayName?.charAt(0) || 'M'}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigateTo('/dashboard')}>Dashboard</DropdownMenuItem>
-                <DropdownMenuItem onClick={navigateToSettings}>Settings</DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </header>
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
+    return (
         <div className="mx-auto max-w-4xl">
           <Card>
             <Suspense fallback={<GeneratingAnimation />}>
@@ -154,7 +114,13 @@ export default function ResultPage() {
             </Suspense>
           </Card>
         </div>
-      </main>
-    </div>
-  );
+    );
+}
+
+export default function ResultPage() {
+    return (
+        <AppLayout>
+            <ResultPageComponent />
+        </AppLayout>
+    )
 }

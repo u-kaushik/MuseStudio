@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { WandSparkles, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import { GeneratingAnimation } from './generating-animation';
 import { Slider } from './ui/slider';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
+import { brandPalettes } from '@/app/dashboard/page';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -74,6 +75,7 @@ export function BasicPromptForm() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,6 +93,24 @@ export function BasicPromptForm() {
     },
     mode: 'onChange'
   });
+
+  useEffect(() => {
+    const objective = searchParams.get('commercialObjective');
+    const paletteName = searchParams.get('brandPalette');
+
+    if (objective) {
+      const foundObjective = COMMERCIAL_OBJECTIVES.find(o => o.label === objective);
+      if (foundObjective) {
+        form.setValue('commercialObjective', foundObjective.value);
+      }
+    }
+    if (paletteName) {
+      const palette = brandPalettes.find(p => p.name === paletteName);
+      if (palette) {
+        form.setValue('brandPalette', palette.colors.slice(0, 5));
+      }
+    }
+  }, [searchParams, form]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -376,5 +396,3 @@ export function BasicPromptForm() {
     </div>
   );
 }
-
-    
