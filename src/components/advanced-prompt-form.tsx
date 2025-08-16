@@ -195,9 +195,6 @@ export function AdvancedPromptForm() {
         case 3:
             fieldsToValidate = ['style'];
             break;
-        case 4:
-            fieldsToValidate = ['mood', 'lighting'];
-            break;
         default:
             fieldsToValidate = [];
             break;
@@ -573,6 +570,11 @@ export function AdvancedPromptForm() {
                                             }}
                                         />
                                     </FormControl>
+                                    <FormDescription className='mt-2'>
+                                        <p><span className='font-bold'>Soft:</span> Diffused, even light with subtle shadows, creating a gentle and flattering look.</p>
+                                        <p><span className='font-bold'>Neutral:</span> Balanced lighting that mimics natural daylight, providing a clear and realistic feel.</p>
+                                        <p><span className='font-bold'>Hard:</span> Creates sharp, well-defined shadows and highlights, adding drama and contrast.</p>
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}
