@@ -73,7 +73,7 @@ export default function BrandBoardPage() {
     const id = workspaceType === 'fashion-brand' ? 'fashion-brand-details' : crypto.randomUUID();
     addClient({ ...client, id });
     setAddClientOpen(false);
-  }
+  };
 
 
   if (loading || !user) {
@@ -181,7 +181,7 @@ export default function BrandBoardPage() {
                                 onSubmit={handleAddClient}
                                 onCancel={() => setAddClientOpen(false)}
                                 isBrandFlow={true}
-                               - initialData={brand}
+                                initialData={brand}
                               />
                           </DialogContent>
                       </Dialog>
