@@ -4,9 +4,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +47,41 @@ export const brandPalettes = [
 
 const lifetimeAccessUsers = ['ukaushik37@gmail.com', 'vay.kaushik@gmail.com'];
 
+const museLessons = [
+    { 
+        letter: 'M', 
+        title: 'Morphology',
+        description: 'Understand the form, shape, and structure of your subject.',
+        progress: 75,
+        image: 'https://placehold.co/600x400.png',
+        hint: 'fashion model pose'
+    },
+    { 
+        letter: 'U',
+        title: 'Uniformity',
+        description: 'Master texture, material, and consistency in your visuals.',
+        progress: 50,
+        image: 'https://placehold.co/600x400.png',
+        hint: 'fabric texture'
+    },
+    { 
+        letter: 'S',
+        title: 'Style',
+        description: 'Define the artistic style, era, and aesthetic of your brand.',
+        progress: 25,
+        image: 'https://placehold.co/600x400.png',
+        hint: 'vintage fashion sketch'
+    },
+    { 
+        letter: 'E',
+        title: 'Essence',
+        description: 'Capture the mood, feeling, and core concept of your campaign.',
+        progress: 10,
+        image: 'https://placehold.co/600x400.png',
+        hint: 'inspirational mood board'
+    }
+];
+
 function DashboardContent() {
   const { user, loading } = useAuth();
   const { clients, addClient, removeClient } = useClients();
@@ -57,8 +93,7 @@ function DashboardContent() {
   const [isAddCampaignOpen, setAddCampaignOpen] = useState(false);
   const [workspaceType, setWorkspaceType] = useState('');
   const [hasLifetimeAccess, setHasLifetimeAccess] = useState(false);
-  const [courseProgress, setCourseProgress] = useState(25); // Example progress
-
+  
   const brand = clients.find(c => c.id === 'fashion-brand-details');
 
   useEffect(() => {
@@ -101,44 +136,52 @@ function DashboardContent() {
   }
   
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8">
         <div className="flex items-center justify-between">
             <h1 className="text-3xl font-headline">Dashboard</h1>
              <Button asChild>
                 <Link href="/">Create New Prompt</Link>
             </Button>
         </div>
-
+        
         <Card>
-            <CardHeader>
-                <div className="flex items-center gap-4">
+            <CardHeader className="flex flex-row items-center justify-between">
+                 <div className="flex items-center gap-4">
                     <GraduationCap className="h-8 w-8 text-accent" />
                     <div>
                         <CardTitle>M.U.S.E. Launch</CardTitle>
                         <CardDescription>Create commercially ready AI fashion models</CardDescription>
                     </div>
                 </div>
+                 {hasLifetimeAccess ? (
+                    <Badge variant="secondary">Lifetime Access</Badge>
+                ) : (
+                    <Button asChild>
+                        <Link href="/">Get Started</Link>
+                    </Button>
+                )}
             </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Progress</span>
-                        <span>{courseProgress}%</span>
-                    </div>
-                    <Progress value={courseProgress} />
-                </div>
-                <div className="flex items-center justify-between rounded-lg border bg-card-foreground/5 p-6">
-                    <p className="font-medium text-lg">Get started with the M.U.S.E. framework.</p>
-                    {hasLifetimeAccess ? (
-                        <Badge variant="secondary">Lifetime Access</Badge>
-                    ) : (
-                         <Button asChild>
-                            <Link href="/">Get Started</Link>
-                        </Button>
-                    )}
+            <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {museLessons.map((lesson) => (
+                        <Card key={lesson.letter} className="flex flex-col">
+                            <Image src={lesson.image} data-ai-hint={lesson.hint} alt={lesson.title} width={600} height={400} className="object-cover w-full h-40 rounded-t-lg" />
+                            <CardHeader>
+                                <CardTitle className="font-headline">{lesson.letter}: {lesson.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                                <p className="text-sm text-muted-foreground">{lesson.description}</p>
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2">
+                                <Progress value={lesson.progress} />
+                                <span className="text-xs text-muted-foreground">{lesson.progress}% complete</span>
+                            </CardFooter>
+                        </Card>
+                    ))}
                 </div>
             </CardContent>
         </Card>
+
 
         {workspaceType === 'fashion-brand' && (
           <Card>
