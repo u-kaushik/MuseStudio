@@ -151,10 +151,12 @@ export function AdvancedPromptForm() {
   const selectedPalette = brandPalettes.find(p => p.name === watchBrandPalette);
 
   useEffect(() => {
-    if (selectedPalette) {
-      form.setValue('dominantColor', selectedPalette.colors[0]);
+    const palette = brandPalettes.find(p => p.name === watchBrandPalette);
+    if (palette && palette.colors.length > 0) {
+      form.setValue('dominantColor', palette.colors[0], { shouldValidate: true });
     }
-  }, [watchBrandPalette, selectedPalette, form]);
+  }, [watchBrandPalette, form]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -218,7 +220,8 @@ export function AdvancedPromptForm() {
         const isValid = await form.trigger(fieldsToValidate);
         if (!isValid) return;
     }
-
+    
+    // Don't validate step 5 fields until submit
     if (step < TOTAL_STEPS) {
         setStep(prev => prev + 1);
     }
