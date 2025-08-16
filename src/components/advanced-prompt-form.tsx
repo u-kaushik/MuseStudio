@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { WandSparkles, Plus, X, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, useFormField } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { MultiChoiceOption } from './multi-choice-option';
 import { Switch } from './ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { cn } from '@/lib/utils';
 
 
 const formSchema = z.object({
@@ -72,6 +73,23 @@ const COMPLEXIONS = [
     { value: 'dark-south-asian', label: 'Dark', subLabel: 'South Asian' },
 ];
 
+const FormLabelBlack = React.forwardRef<
+  React.ElementRef<typeof Label>,
+  React.ComponentPropsWithoutRef<typeof Label>
+>(({ className, ...props }, ref) => {
+  const { error, formItemId } = useFormField()
+
+  return (
+    <Label
+      ref={ref}
+      className={cn(className)}
+      htmlFor={formItemId}
+      {...props}
+    />
+  )
+})
+FormLabelBlack.displayName = "FormLabelBlack"
+
 
 export function AdvancedPromptForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -98,6 +116,15 @@ export function AdvancedPromptForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const allFieldsValid = await form.trigger();
+    if (!allFieldsValid) {
+        toast({
+            title: "Incomplete Form",
+            description: "Please fill out all required fields before generating.",
+            variant: "destructive"
+        });
+        return;
+    }
     setIsLoading(true);
     try {
        const mappedValues = {
@@ -122,12 +149,9 @@ export function AdvancedPromptForm() {
 
   const nextStep = async () => {
     let fieldsToValidate: (keyof z.infer<typeof formSchema>)[] = [];
-    if (step === 1) fieldsToValidate = ['commercialObjective'];
-    if (step === 2) {
-        const morphologyIsValid = await form.trigger(['faceShape', 'complexion', 'bodyShape']);
-        if (!morphologyIsValid) return;
+    if (step === 1) {
+        fieldsToValidate = ['commercialObjective'];
     }
-
 
     const isValid = await form.trigger(fieldsToValidate);
     if (isValid) {
@@ -205,7 +229,7 @@ export function AdvancedPromptForm() {
                                 name="faceShape"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-semibold">Face Shape</FormLabel>
+                                        <FormLabelBlack className="text-base font-semibold">Face Shape</FormLabelBlack>
                                         <FormControl>
                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 {FACE_SHAPES.map((shape) => (
@@ -228,7 +252,7 @@ export function AdvancedPromptForm() {
                                 name="complexion"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-semibold">Complexion</FormLabel>
+                                        <FormLabelBlack className="text-base font-semibold">Complexion</FormLabelBlack>
                                         <FormControl>
                                             <RadioGroup
                                             onValueChange={field.onChange}
@@ -259,7 +283,7 @@ export function AdvancedPromptForm() {
                                 name="bodyShape"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base font-semibold">Body Shape</FormLabel>
+                                        <FormLabelBlack className="text-base font-semibold">Body Shape</FormLabelBlack>
                                         <FormControl>
                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 {BODY_SHAPES.map((shape) => (
@@ -323,5 +347,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
