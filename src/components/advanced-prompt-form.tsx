@@ -90,6 +90,9 @@ export function AdvancedPromptForm() {
       brandPalette: ['#D2B48C', '#FFFFFF', '#000000'],
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
+      style: '',
+      mood: '',
+      clothingType: '',
     },
     mode: 'onChange'
   });
@@ -305,3 +308,4 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
