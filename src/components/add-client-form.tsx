@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { brandPalettes } from '@/app/brand-board/page';
+import { brandPalettes } from '@/app/dashboard/page';
 import type { Client } from '@/hooks/use-clients';
 
 const commercialObjectives = [
