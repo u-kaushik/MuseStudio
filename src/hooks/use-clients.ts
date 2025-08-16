@@ -14,7 +14,7 @@ export interface Client {
 
 interface ClientState {
   clients: Client[];
-  addClient: (client: Omit<Client, 'id'>) => void;
+  addClient: (client: Omit<Client, 'id'> & { id: string }) => void;
   removeClient: (clientId: string) => void;
 }
 
@@ -23,9 +23,15 @@ export const useClients = create<ClientState>()(
     (set) => ({
       clients: [],
       addClient: (client) =>
-        set((state) => ({
-          clients: [...state.clients, { ...client, id: crypto.randomUUID() }],
-        })),
+        set((state) => {
+          const existingClientIndex = state.clients.findIndex((c) => c.id === client.id);
+          if (existingClientIndex !== -1) {
+            const updatedClients = [...state.clients];
+            updatedClients[existingClientIndex] = client;
+            return { clients: updatedClients };
+          }
+          return { clients: [...state.clients, client] };
+        }),
       removeClient: (clientId) =>
         set((state) => ({
           clients: state.clients.filter((client) => client.id !== clientId),

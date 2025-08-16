@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { brandPalettes } from '@/app/brand-board/page';
+import type { Client } from '@/hooks/use-clients';
 
 const commercialObjectives = [
   'Brand Awareness',
@@ -31,12 +32,14 @@ type AddClientFormValues = z.infer<typeof formSchema>;
 interface AddClientFormProps {
   onSubmit: (data: Omit<AddClientFormValues, 'commercialObjectiveFreeText'> & { commercialObjective: string }) => void;
   onCancel: () => void;
+  isBrandFlow?: boolean;
+  initialData?: Omit<Client, 'id'>;
 }
 
-export function AddClientForm({ onSubmit, onCancel }: AddClientFormProps) {
+export function AddClientForm({ onSubmit, onCancel, isBrandFlow = false, initialData }: AddClientFormProps) {
   const form = useForm<AddClientFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       name: '',
       defaultBrandPalette: '',
       commercialObjective: '',
@@ -69,9 +72,9 @@ export function AddClientForm({ onSubmit, onCancel }: AddClientFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Client Name</FormLabel>
+              <FormLabel>{isBrandFlow ? 'Brand Name' : 'Client Name'}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Nova Fashion" {...field} />
+                <Input placeholder={isBrandFlow ? "e.g., Muse" : "e.g., Nova Fashion"} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -156,7 +159,7 @@ export function AddClientForm({ onSubmit, onCancel }: AddClientFormProps) {
             <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
             </Button>
-            <Button type="submit">Save Client</Button>
+            <Button type="submit">Save {isBrandFlow ? 'Brand' : 'Client'}</Button>
         </div>
       </form>
     </Form>

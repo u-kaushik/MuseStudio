@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus } from 'lucide-react';
+import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
 import { Icons } from '@/components/icons';
@@ -49,6 +49,8 @@ export default function BrandBoardPage() {
   const [isAddClientOpen, setAddClientOpen] = useState(false);
   const [workspaceType, setWorkspaceType] = useState('');
 
+  const brand = clients.find(c => c.id === 'fashion-brand-details');
+
   useEffect(() => {
     const storedWorkspaceType = localStorage.getItem('workspaceType');
     if (storedWorkspaceType) {
@@ -68,7 +70,8 @@ export default function BrandBoardPage() {
   };
   
   const handleAddClient = (client: Omit<Client, 'id'>) => {
-    addClient(client);
+    const id = workspaceType === 'fashion-brand' ? 'fashion-brand-details' : crypto.randomUUID();
+    addClient({ ...client, id });
     setAddClientOpen(false);
   }
 
@@ -124,6 +127,73 @@ export default function BrandBoardPage() {
                 </Button>
             </div>
 
+            {workspaceType === 'fashion-brand' && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Your Brand</CardTitle>
+                    <CardDescription>Manage your brand name, palette, and objective.</CardDescription>
+                  </div>
+                  {!brand && (
+                     <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                        <DialogTrigger asChild>
+                             <Button><Building className="mr-2" /> Add Brand Details</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add Your Brand Details</DialogTitle>
+                                <DialogDescription>
+                                    Enter the details for your brand.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} />
+                        </DialogContent>
+                    </Dialog>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  {brand ? (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-semibold">Brand Name</h4>
+                        <p>{brand.name}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Default Brand Palette</h4>
+                        <p>{brand.defaultBrandPalette}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Commercial Objective</h4>
+                        <p>{brand.commercialObjective}</p>
+                      </div>
+                       <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                          <DialogTrigger asChild>
+                               <Button variant="outline">Edit Brand Details</Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                              <DialogHeader>
+                                  <DialogTitle>Edit Your Brand Details</DialogTitle>
+                                  <DialogDescription>
+                                      Update the details for your brand.
+                                  </DialogDescription>
+                              </DialogHeader>
+                              <AddClientForm
+                                onSubmit={handleAddClient}
+                                onCancel={() => setAddClientOpen(false)}
+                                isBrandFlow={true}
+                               - initialData={brand}
+                              />
+                          </DialogContent>
+                      </Dialog>
+                    </div>
+                  ) : (
+                     <p className="text-center text-muted-foreground py-8">You haven't added your brand details yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+
           {workspaceType === 'freelancer' && (
              <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -158,7 +228,7 @@ export default function BrandBoardPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {clients.map((client) => (
+                      {clients.filter(c => c.id !== 'fashion-brand-details').map((client) => (
                         <TableRow key={client.id}>
                           <TableCell className="font-medium">{client.name}</TableCell>
                           <TableCell>{client.defaultBrandPalette}</TableCell>
