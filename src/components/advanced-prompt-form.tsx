@@ -196,37 +196,6 @@ export function AdvancedPromptForm() {
     }
   }
 
-  const nextStep = async () => {
-    let fieldsToValidate: (keyof z.infer<typeof formSchema>)[];
-    switch (step) {
-        case 1:
-            fieldsToValidate = ['commercialObjective'];
-            break;
-        case 2:
-            fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
-            break;
-        case 3:
-            fieldsToValidate = ['style', 'dominantColor'];
-            break;
-        case 4:
-            fieldsToValidate = ['mood', 'lighting'];
-            break;
-        case 5:
-            fieldsToValidate = ['pose'];
-            break;
-        default:
-            fieldsToValidate = [];
-            break;
-    }
-
-    const isValid = await form.trigger(fieldsToValidate);
-    if (isValid) {
-        if (step < TOTAL_STEPS) {
-            setStep(prev => prev + 1);
-        }
-    }
-  };
-
   const prevStep = () => setStep(prev => prev - 1);
   
   if (isLoading) {
@@ -696,7 +665,7 @@ export function AdvancedPromptForm() {
               <div className="flex justify-between pt-4">
                   {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
                   {step < TOTAL_STEPS ? (
-                      <Button type="button" onClick={nextStep}>Next</Button>
+                      <Button type="button" onClick={() => setStep(prev => prev + 1)}>Next</Button>
                   ) : (
                     <Button type="submit" disabled={isLoading}>
                       <WandSparkles className="mr-2 h-4 w-4" />
