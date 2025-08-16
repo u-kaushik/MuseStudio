@@ -8,17 +8,23 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Icons } from './icons';
 import { useAuth } from '@/hooks/use-auth';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
+  
   const navigateTo = (path: string) => {
     router.push(path);
   };
   
-  if (!user) {
+  if (loading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 

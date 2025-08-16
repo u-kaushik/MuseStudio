@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,12 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    await signOut(auth);
-    localStorage.removeItem('workspaceType');
-    localStorage.removeItem('client-storage');
-    localStorage.removeItem('campaign-storage');
-    router.push('/auth');
+  const logout = () => {
+    signOut(auth).then(() => {
+      localStorage.removeItem('workspaceType');
+      localStorage.removeItem('client-storage');
+      localStorage.removeItem('campaign-storage');
+      localStorage.removeItem('prompt-storage');
+      router.push('/auth');
+    }).catch((error) => {
+        console.error("Error signing out: ", error)
+    });
   };
 
   return (
