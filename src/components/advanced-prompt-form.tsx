@@ -246,11 +246,22 @@ export function AdvancedPromptForm() {
                                                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
                                             >
                                                 {COMMERCIAL_OBJECTIVES.map(option => (
-                                                    <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
+                                                    <FormItem key={option.value} className="flex-grow">
                                                         <FormControl>
-                                                            <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has-[:checked]:border-primary w-full cursor-pointer">
+                                                            <div 
+                                                                className={cn(
+                                                                    'relative rounded-lg p-4 cursor-pointer group border-2 bg-card',
+                                                                    field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                                                                )}
+                                                                onClick={() => field.onChange(option.value)}
+                                                            >
+                                                                {field.value === option.value && (
+                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                        <CheckCircle className="h-6 w-6" />
+                                                                    </div>
+                                                                )}
                                                                 <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer">
+                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
                                                                     <p className="font-bold">{option.label}</p>
                                                                     <p className="text-muted-foreground">{option.description}</p>
                                                                 </Label>
@@ -557,5 +568,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
