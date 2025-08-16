@@ -56,12 +56,12 @@ function HomePageContentComponent() {
           </div>
           <TabsContent value="basic" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <BasicPromptForm />
+              <AdvancedPromptForm />
             </div>
           </TabsContent>
           <TabsContent value="advanced" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <AdvancedPromptForm />
+              <BasicPromptForm />
             </div>
           </TabsContent>
           <TabsContent value="settings" className="mt-6">

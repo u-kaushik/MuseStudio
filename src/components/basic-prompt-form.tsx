@@ -6,7 +6,7 @@ import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { WandSparkles, ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
+import { WandSparkles, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,7 +15,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { generateBasicPrompt, type GenerateBasicPromptInput } from '@/ai/flows/generate-prompt';
 import { MultiChoiceOption } from './multi-choice-option';
-import { Progress } from '@/components/ui/progress';
 import { ColorPicker } from './color-picker';
 import { GeneratingAnimation } from './generating-animation';
 import { Slider } from './ui/slider';
@@ -23,58 +22,61 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { brandPalettes } from '@/app/dashboard/page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
-  gender: z.string().default('female'), // Defaulting as step is removed
+  gender: z.string().default('female'),
   style: z.string().min(1, 'Style is required.'),
   mood: z.string().min(1, 'Mood is required.'),
   complexion: z.string().min(1, 'Complexion is required.'),
   intensity: z.number().min(0).max(100),
-  clothingType: z.string().default('streetwear'), // Defaulting as step is removed
+  clothingType: z.string().min(1, "Clothing type is required"),
   brandPalette: z.array(z.string()).min(1, "Please select at least one color"),
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
 });
 
 const COMMERCIAL_OBJECTIVES = [
-    { value: 'brand-awareness', label: 'Brand Awareness', description: 'Engage and attract a wide audience.', image: 'https://placehold.co/600x400.png', hint: 'brand campaign' },
-    { value: 'product-listing', label: 'Product Listing (PLP)', description: 'Showcase products in a grid.', image: 'https://placehold.co/600x400.png', hint: 'product grid' },
-    { value: 'product-detail', label: 'Product Detail (PDP)', description: 'Focus on a single product\'s features.', image: 'https://placehold.co/600x400.png', hint: 'product details' },
+    { value: 'brand-awareness', label: 'Brand Awareness', description: 'Engage and attract a wide audience.' },
+    { value: 'product-listing', label: 'Product Listing (PLP)', description: 'Showcase products in a grid.' },
+    { value: 'product-detail', label: 'Product Detail (PDP)', description: 'Focus on a single product\'s features.' },
 ];
 
 const STYLES = [
-    { value: 'classic-elegance', label: 'Classic Elegance', description: 'Timeless luxury with soft silhouettes.', image: 'https://placehold.co/600x400.png', hint: 'classic fashion' },
-    { value: 'modern-minimal', label: 'Modern Minimal', description: 'Clean lines and understated design.', image: 'https://placehold.co/600x400.png', hint: 'minimalist fashion' },
-    { value: 'dramatic-glamour', label: 'Dramatic Glamour', description: 'Bold editorial looks with striking shapes.', image: 'https://placehold.co/600x400.png', hint: 'glamorous fashion' },
+    { value: 'classic-elegance', label: 'Classic Elegance' },
+    { value: 'modern-minimal', label: 'Modern Minimal' },
+    { value: 'dramatic-glamour', label: 'Dramatic Glamour' },
 ];
 
 const MOODS = [
-    { value: 'mystery-curiosity', label: 'Mystery & Curiosity', description: 'Create intrigue and spark curiosity.', image: 'https://placehold.co/600x400.png', hint: 'mysterious mood', compatibleStyles: ['classic-elegance', 'modern-minimal', 'dramatic-glamour'] },
-    { value: 'energy-excitement', label: 'Energy & Excitement', description: 'Ignite energy and excitement.', image: 'https://placehold.co/600x400.png', hint: 'energetic mood', compatibleStyles: ['dramatic-glamour'] },
-    { value: 'trust-sophistication', label: 'Trust & Sophistication', description: 'Project trust, calm and sophistication.', image: 'https://placehold.co/600x400.png', hint: 'sophisticated mood', compatibleStyles: ['classic-elegance', 'modern-minimal'] },
+    { value: 'mystery-curiosity', label: 'Mystery & Curiosity' },
+    { value: 'energy-excitement', label: 'Energy & Excitement' },
+    { value: 'trust-sophistication', label: 'Trust & Sophistication' },
 ];
 
 const COMPLEXIONS = [
-    { value: 'light-complexion', label: 'Light Complexion', description: 'Fair skin, blonde hair, blue eyes.', image: 'https://placehold.co/600x400.png', hint: 'light complexion' },
-    { value: 'medium-complexion', label: 'Medium Complexion', description: 'Tan or olive skin, brown hair, green eyes.', image: 'https://placehold.co/600x400.png', hint: 'medium complexion' },
-    { value: 'dark-complexion', label: 'Dark Complexion', description: 'Deep skin, black hair, brown eyes.', image: 'https://placehold.co/600x400.png', hint: 'dark complexion' },
+    { value: 'light-complexion', label: 'Light' },
+    { value: 'medium-complexion', label: 'Medium' },
+    { value: 'dark-complexion', label: 'Dark' },
 ];
 
-const formSteps = [
-  { name: 'commercialObjective', type: 'multi-choice', title: 'Step 1: Select Your Commercial Objective', description: 'Choose the primary goal for your visual content.', options: COMMERCIAL_OBJECTIVES },
-  { name: 'brandPalette', type: 'color-picker', title: 'Step 2: Input your brand palette', description: 'Select up to five colours that represent your brand, upload a brand guideline PDF or describe your brand vibe in text. These selections shape the mood and tone of your AI model.' },
-  { name: 'style', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: STYLES, subCategory: 'Style' },
-  { name: 'mood', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: MOODS, subCategory: 'Mood' },
-  { name: 'complexion', type: 'multi-choice', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', options: COMPLEXIONS, subCategory: 'Complexion' },
-  { name: 'intensity', type: 'slider', title: 'Step 3: Define your brand style and mood', description: 'Select the style, mood and model complexion that best represent your brand.', subCategory: 'Intensity' },
-] as const;
+const GENDERS = [
+    { value: 'female', label: 'Female' },
+    { value: 'male', label: 'Male' },
+    { value: 'non-binary', label: 'Non-binary' },
+];
 
+const CLOTHING_TYPES = [
+    { value: 'streetwear', label: 'Streetwear' },
+    { value: 'haute-couture', label: 'Haute Couture' },
+    { value: 'vintage', label: 'Vintage' },
+    { value: 'athleisure', label: 'Athleisure' },
+]
 
 export function BasicPromptForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -87,7 +89,7 @@ export function BasicPromptForm() {
       mood: '',
       complexion: '',
       intensity: 50,
-      clothingType: 'streetwear',
+      clothingType: '',
       brandPalette: ['#D2B48C', '#FFFFFF', '#000000'],
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
@@ -118,67 +120,13 @@ export function BasicPromptForm() {
     name: 'brandPalette',
   });
 
-  const uniqueStepTitles = useMemo(() => {
-    return formSteps.reduce((acc, step) => {
-      if (!acc.includes(step.title)) {
-        acc.push(step.title);
-      }
-      return acc;
-    }, [] as string[]);
-  }, []);
-  
-  const currentTitle = formSteps[currentStep].title;
-  const currentUniqueStepIndex = uniqueStepTitles.indexOf(currentTitle);
-
-  const progress = useMemo(() => {
-    return ((currentUniqueStepIndex + 1) / uniqueStepTitles.length) * 100;
-  }, [currentUniqueStepIndex, uniqueStepTitles.length]);
-
-
-  const selectedStyle = form.watch('style');
-
-  const availableMoods = useMemo(() => {
-    if (!selectedStyle) return MOODS;
-    const filtered = MOODS.filter(mood => mood.compatibleStyles.includes(selectedStyle));
-    if (!filtered.some(mood => mood.value === form.getValues('mood'))) {
-        form.setValue('mood', '', { shouldValidate: true });
-    }
-    return filtered;
-  }, [selectedStyle, form]);
-
-  async function handleNext() {
-    const currentStepInfo = formSteps[currentStep];
-    const stepsWithSameTitle = formSteps.filter(step => step.title === currentStepInfo.title);
-    const fieldNamesToValidate = stepsWithSameTitle.map(step => step.name);
-  
-    // @ts-ignore
-    const isValid = await form.trigger(fieldNamesToValidate);
-    if (isValid) {
-      if (currentUniqueStepIndex < uniqueStepTitles.length - 1) {
-        const nextStepTitle = uniqueStepTitles[currentUniqueStepIndex + 1];
-        const nextStepIndex = formSteps.findIndex(s => s.title === nextStepTitle);
-        setCurrentStep(nextStepIndex);
-      }
-    }
-  }
-
-  function handleBack() {
-    if (currentUniqueStepIndex > 0) {
-      const prevStepTitle = uniqueStepTitles[currentUniqueStepIndex - 1];
-      const prevStepIndex = formSteps.findIndex(s => s.title === prevStepTitle);
-      setCurrentStep(prevStepIndex);
-    }
-  }
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // The generateBasicPrompt expects ethnicity, so we map complexion to it.
       const mappedValues = {
         ...values,
         ethnicity: values.complexion,
       }
-      // @ts-ignore
       const result = await generateBasicPrompt(mappedValues as GenerateBasicPromptInput);
       const params = new URLSearchParams();
       params.set('prompt', result.prompt);
@@ -206,217 +154,272 @@ export function BasicPromptForm() {
     return <GeneratingAnimation />;
   }
   
-  const isLastStep = currentUniqueStepIndex === uniqueStepTitles.length - 1;
-
   const colorLabels = ['Primary Colour', 'Secondary Colour', 'Tertiary Colour', 'Accent Colour 1', 'Accent Colour 2'];
-
-  const currentFormStep = formSteps[currentStep];
-
-  const groupedSteps: { [key: string]: (typeof formSteps[number])[] } = formSteps.reduce((acc, step) => {
-    if (!acc[step.title]) {
-        acc[step.title] = [];
-    }
-    acc[step.title].push(step);
-    return acc;
-  }, {});
-
-  const totalUniqueSteps = uniqueStepTitles.length;
-
 
   return (
     <div className="space-y-6">
-       <Progress value={progress} className="w-full" />
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">{currentFormStep.title} ({currentUniqueStepIndex + 1} / {totalUniqueSteps})</CardTitle>
-          <CardDescription>{currentFormStep.description}</CardDescription>
+          <CardTitle className="font-headline">Advanced Mode</CardTitle>
+          <CardDescription>Use the multi-step wizard to craft a detailed prompt for your campaign.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="min-h-[350px]">
-                {Object.entries(groupedSteps).map(([title, steps]) => {
-                    const isActive = currentFormStep.title === title;
-                    return (
-                        <div key={title} className={isActive ? 'block' : 'hidden'}>
-                            <div className="space-y-8">
-                            {steps.map(step => (
-                                <div key={step.name}>
-                                    {step.type === 'multi-choice' && (
-                                        <Controller
-                                            control={form.control}
-                                            name={step.name as any}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
-                                                    <FormControl>
-                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                            {(step.name === 'mood' ? availableMoods : (step.options || [])).map((option) => (
-                                                                <MultiChoiceOption
-                                                                    key={option.value}
-                                                                    label={option.label}
-                                                                    description={option.description}
-                                                                    image={option.image}
-                                                                    data-ai-hint={option.hint}
-                                                                    isSelected={field.value === option.value}
-                                                                    onSelect={() => field.onChange(option.value)}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    )}
-                                     {step.type === 'slider' && (
-                                         <Controller
-                                            control={form.control}
-                                            name="intensity"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <div className="flex justify-between items-center">
-                                                        {step.subCategory && <FormLabel>{step.subCategory}</FormLabel>}
-                                                        <span className="text-sm text-muted-foreground">{field.value}</span>
-                                                    </div>
-                                                    <FormControl>
-                                                        <Slider
-                                                            defaultValue={[field.value]}
-                                                            onValueChange={(value) => field.onChange(value[0])}
-                                                            max={100}
-                                                            step={1}
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>
-                                                      The higher the intensity, the stronger the nature of the adjectives.
-                                                    </FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                             {currentFormStep.type === 'color-picker' && (
-                                <div className="space-y-8">
-                                    <FormItem>
-                                        <FormLabel>Choose a pre-saved palette (optional)</FormLabel>
-                                        <Select onValueChange={handlePaletteSelect}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                <SelectValue placeholder="Select a saved palette" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {brandPalettes.map((palette) => (
-                                                <SelectItem key={palette.name} value={palette.name}>
-                                                    <div className="flex items-center gap-2">
-                                                    {palette.colors.map(color => <div key={color} className="h-4 w-4 rounded-full border" style={{ backgroundColor: color }} />)}
-                                                    <span>{palette.name}</span>
-                                                    </div>
-                                                </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-
+                <Accordion type="multiple" defaultValue={['objective', 'brand', 'model', 'creative']} className="w-full">
+                    <AccordionItem value="objective">
+                        <AccordionTrigger className="text-lg font-headline">Commercial Objective</AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                            <FormField
+                                control={form.control}
+                                name="commercialObjective"
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <div className="flex flex-col md:flex-row gap-4">
-                                                {fields.map((field, index) => (
-                                                    <div key={field.id} className="relative flex-1">
-                                                        <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
-
-                                                        <div className="flex items-center gap-2">
-                                                            <Controller
-                                                                control={form.control}
-                                                                name={`brandPalette.${index}`}
-                                                                render={({ field: colorField }) => (
-                                                                    <ColorPicker
-                                                                        background={colorField.value}
-                                                                        onChange={colorField.onChange}
-                                                                    />
-                                                                )}
-                                                            />
-                                                            {index >= 3 && (
-                                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove(index)}>
-                                                                    <X className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                            <RadioGroup
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                            >
+                                                {COMMERCIAL_OBJECTIVES.map(option => (
+                                                    <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has-[:checked]:border-primary w-full">
+                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
+                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer">
+                                                                    <p className="font-bold">{option.label}</p>
+                                                                    <p className="text-muted-foreground">{option.description}</p>
+                                                                </Label>
+                                                            </div>
+                                                        </FormControl>
+                                                    </FormItem>
                                                 ))}
-                                            </div>
+                                            </RadioGroup>
                                         </FormControl>
-                                        {fields.length < 5 && (
-                                            <Button type="button" variant="outline" onClick={() => append('#000000')}>
-                                                <Plus className="mr-2 h-4 w-4" />
-                                                Add Accent Color
-                                            </Button>
-                                        )}
                                         <FormMessage />
                                     </FormItem>
+                                )}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="brand">
+                        <AccordionTrigger className="text-lg font-headline">Brand Identity</AccordionTrigger>
+                        <AccordionContent className="pt-4 space-y-6">
+                             <FormItem>
+                                <FormLabel>Choose a pre-saved palette (optional)</FormLabel>
+                                <Select onValueChange={handlePaletteSelect}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Select a saved palette" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {brandPalettes.map((palette) => (
+                                        <SelectItem key={palette.name} value={palette.name}>
+                                            <div className="flex items-center gap-2">
+                                            {palette.colors.map(color => <div key={color} className="h-4 w-4 rounded-full border" style={{ backgroundColor: color }} />)}
+                                            <span>{palette.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="brandGuidelinesFile"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Upload Brand Guidelines (PDF)</FormLabel>
-                                                <FormControl>
-                                                    <Input type="file" accept=".pdf" onChange={(e) => field.onChange(e.target.files)} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                            <FormItem>
+                                <FormControl>
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        {fields.map((field, index) => (
+                                            <div key={field.id} className="relative flex-1">
+                                                <Label className="text-xs text-muted-foreground">{colorLabels[index]}</Label>
+                                                <div className="flex items-center gap-2">
+                                                    <Controller
+                                                        control={form.control}
+                                                        name={`brandPalette.${index}`}
+                                                        render={({ field: colorField }) => (
+                                                            <ColorPicker
+                                                                background={colorField.value}
+                                                                onChange={colorField.onChange}
+                                                            />
+                                                        )}
+                                                    />
+                                                    {index >= 3 && (
+                                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove(index)}>
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </FormControl>
+                                {fields.length < 5 && (
+                                    <Button type="button" variant="outline" onClick={() => append('#000000')} className="mt-2">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Accent Color
+                                    </Button>
+                                )}
+                                <FormMessage />
+                            </FormItem>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="brandGuidelinesText"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Brand guidelines (optional text)</FormLabel>
-                                                <FormControl>
-                                                    <Textarea placeholder="Elegant, bold, sophisticated." {...field} />
-                                                </FormControl>
-                                                <FormDescription>
-                                                  Need inspiration? Try phrases like:
-                                                  <ul className="list-disc pl-5 mt-1">
-                                                    <li>"Timeless luxury with a contemporary edge"</li>
-                                                    <li>"Bold streetwear infused with youthful energy"</li>
-                                                    <li>"Elegant minimalism grounded in nature"</li>
-                                                  </ul>
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                              )}
-                            </div>
-                        </div>
-                    )
-                })}
-              </div>
+                            <FormField
+                                control={form.control}
+                                name="brandGuidelinesFile"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Upload Brand Guidelines (PDF)</FormLabel>
+                                        <FormControl>
+                                            <Input type="file" accept=".pdf" onChange={(e) => field.onChange(e.target.files)} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-              <div className="flex justify-between">
-                <Button type="button" variant="outline" onClick={handleBack} disabled={currentUniqueStepIndex === 0}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                </Button>
+                            <FormField
+                                control={form.control}
+                                name="brandGuidelinesText"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Brand Vibe (optional text)</FormLabel>
+                                        <FormControl>
+                                            <Textarea placeholder="Elegant, bold, sophisticated." {...field} />
+                                        </FormControl>
+                                        <FormDescription>
+                                          Need inspiration? Try phrases like:
+                                          <ul className="list-disc pl-5 mt-1">
+                                            <li>"Timeless luxury with a contemporary edge"</li>
+                                            <li>"Bold streetwear infused with youthful energy"</li>
+                                            <li>"Elegant minimalism grounded in nature"</li>
+                                          </ul>
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="model">
+                        <AccordionTrigger className="text-lg font-headline">Model & Clothing</AccordionTrigger>
+                        <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+                           <FormField
+                                control={form.control}
+                                name="gender"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Gender</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                {GENDERS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="complexion"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Complexion</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a complexion" /></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                {COMPLEXIONS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="clothingType"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Clothing Type</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Select clothing type"/></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                {CLOTHING_TYPES.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="creative">
+                        <AccordionTrigger className="text-lg font-headline">Creative Direction</AccordionTrigger>
+                        <AccordionContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <FormField
+                                control={form.control}
+                                name="style"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Style</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a style"/></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                {STYLES.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="mood"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Mood</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Select a mood"/></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                {MOODS.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <Controller
+                                control={form.control}
+                                name="intensity"
+                                render={({ field }) => (
+                                    <FormItem className="col-span-full">
+                                        <div className="flex justify-between items-center">
+                                            <FormLabel>Intensity</FormLabel>
+                                            <span className="text-sm text-muted-foreground">{field.value}</span>
+                                        </div>
+                                        <FormControl>
+                                            <Slider
+                                                defaultValue={[field.value]}
+                                                onValueChange={(value) => field.onChange(value[0])}
+                                                max={100}
+                                                step={1}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                          The higher the intensity, the stronger the nature of the adjectives.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
 
-                {!isLastStep && (
-                  <Button type="button" onClick={handleNext}>
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
-
-                {isLastStep && (
+              <div className="flex justify-end pt-4">
                   <Button type="submit" disabled={isLoading}>
                     <WandSparkles className="mr-2 h-4 w-4" />
                     {isLoading ? 'Generating...' : 'Generate Prompt'}
                   </Button>
-                )}
               </div>
             </form>
           </Form>
@@ -425,5 +428,3 @@ export function BasicPromptForm() {
     </div>
   );
 }
-
-    
