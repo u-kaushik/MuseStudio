@@ -40,7 +40,7 @@ const formSchema = z.object({
   brandPalette: z.string().optional(),
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
-  dominantColor: z.string().optional(),
+  dominantColor: z.string().min(1, 'Dominant color is required.'),
 });
 
 const COMMERCIAL_OBJECTIVES = [
@@ -193,7 +193,7 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['style'];
+            fieldsToValidate = ['style', 'dominantColor'];
             break;
         default:
             fieldsToValidate = [];
@@ -602,3 +602,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
