@@ -97,7 +97,7 @@ const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
-    { value: 'seated-power', label: 'Posed while seated, conveying authority and control.' },
+    { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
 ]
 
 
@@ -144,17 +144,19 @@ export function AdvancedPromptForm() {
   });
   
   const watchAllFields = form.watch();
-  const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
-
+  
   const getLabelForValue = (options: {value: string, label: string}[], value: string) => {
     return options.find(o => o.value === value)?.label || value;
   };
   
   useEffect(() => {
+    const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
     if (selectedPalette && selectedPalette.colors.length > 0) {
-      form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
+      if (watchAllFields.dominantColor !== selectedPalette.colors[0]) {
+         form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
+      }
     }
-  }, [selectedPalette, form]);
+  }, [watchAllFields.brandPalette, form, watchAllFields.dominantColor]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -217,13 +219,10 @@ export function AdvancedPromptForm() {
             break;
     }
 
-    if (fieldsToValidate.length > 0) {
-      const isValid = await form.trigger(fieldsToValidate);
-      if (!isValid) return;
-    }
-    
     if (step < TOTAL_STEPS) {
-      setStep(prev => prev + 1);
+        const isValid = await form.trigger(fieldsToValidate);
+        if (!isValid) return;
+        setStep(prev => prev + 1);
     } else {
       await form.handleSubmit(onSubmit)();
     }
@@ -234,6 +233,8 @@ export function AdvancedPromptForm() {
   if (isLoading) {
     return <GeneratingAnimation />;
   }
+
+  const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
 
   return (
     <div className="space-y-6">
@@ -603,7 +604,7 @@ export function AdvancedPromptForm() {
                         <CardHeader>
                             <CardTitle className="font-headline">Step 5: Essence</CardTitle>
                             <CardDescription>Define the pose and expression of your model.</CardDescription>
-                        </Header>
+                        </CardHeader>
                         <CardContent className="space-y-8">
                             <FormField
                                 control={form.control}
