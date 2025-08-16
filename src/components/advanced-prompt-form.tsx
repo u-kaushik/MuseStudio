@@ -205,7 +205,6 @@ export function AdvancedPromptForm() {
 
   const prevStep = () => setStep(prev => prev - 1);
   const nextStep = () => setStep(prev => prev + 1);
-
   
   if (isLoading) {
     return <GeneratingAnimation />;
@@ -666,20 +665,23 @@ export function AdvancedPromptForm() {
                                     <Button variant="ghost" size="sm" onClick={() => setStep(5)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
                                 </div>
                             </div>
+                             <div className="flex justify-between pt-4">
+                                <Button type="button" variant="outline" onClick={prevStep}>Back</Button>
+                                <Button type="submit" disabled={isLoading}>
+                                    <WandSparkles className="mr-2 h-4 w-4" />
+                                    {isLoading ? 'Generating...' : 'Generate Prompt'}
+                                </Button>
+                            </div>
                         </CardContent>
                      </Card>
                 )}
 
 
               <div className="flex justify-between pt-4">
-                  {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
-                  {step < TOTAL_STEPS ? (
+                  {step > 1 && step < TOTAL_STEPS && (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>)}
+                  {step === 1 && <div/>}
+                  {step < TOTAL_STEPS && (
                       <Button type="button" onClick={nextStep}>Next</Button>
-                  ) : (
-                    <Button type="submit" disabled={isLoading}>
-                      <WandSparkles className="mr-2 h-4 w-4" />
-                      {isLoading ? 'Generating...' : 'Generate Prompt'}
-                    </Button>
                   )}
               </div>
             </form>
@@ -689,3 +691,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
