@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building, GraduationCap, PlusCircle, ChevronDown } from 'lucide-react';
+import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building, GraduationCap, PlusCircle, ChevronDown, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger as AccordionTriggerPrimitive } from "@/components/ui/accordion";
@@ -24,26 +24,13 @@ import { Icons } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
 import { useClients, Client } from '@/hooks/use-clients';
 import { useCampaigns, Campaign } from '@/hooks/use-campaigns';
+import { usePrompts, Prompt } from '@/hooks/use-prompts';
 import { AddClientForm } from '@/components/add-client-form';
 import { AddCampaignForm } from '@/components/add-campaign-form';
 import { AppLayout } from '@/components/app-layout';
 
-type Prompt = {
-  id: string;
-  title: string;
-  date: string;
-  isFavorite: boolean;
-  isSaved: boolean;
-  prompt: string;
-};
 
 // Mock data - replace with actual data fetching
-const savedPrompts: Prompt[] = [
-  { id: '1', title: 'Cyberpunk Street Fashion', date: '2023-10-27', isFavorite: true, isSaved: true, prompt: 'A full-body shot of a female model in a cyberpunk-style outfit, futuristic cityscape at night, neon lights, high-tech gear, shot on 70mm, f/2.8.' },
-  { id: '2', title: 'Vintage Autumn Look', date: '2023-10-25', isFavorite: false, isSaved: true, prompt: 'A male model wearing a vintage tweed jacket in an autumn park, golden hour lighting, soft shadows, warm color palette, shallow depth of field.' },
-  { id: '3', 'title': 'Minimalist Activewear', date: '2023-10-22', isFavorite: true, isSaved: true, prompt: 'A non-binary model in minimalist, neutral-toned activewear, clean studio background, geometric shapes, dynamic pose, bright, even lighting.' },
-];
-
 export const brandPalettes = [
   { name: 'Earthy Tones', colors: ['#8B4513', '#A0522D', '#D2B48C', '#F5DEB3', '#2F4F4F'] },
   { name: 'Ocean Blues', colors: ['#00008B', '#0000CD', '#4169E1'] },
@@ -110,6 +97,7 @@ function DashboardContent() {
   const { user, loading } = useAuth();
   const { clients, addClient, removeClient } = useClients();
   const { campaigns, addCampaign } = useCampaigns();
+  const { prompts, removePrompt, toggleFavorite } = usePrompts();
   const router = useRouter();
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -385,49 +373,57 @@ function DashboardContent() {
                         <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent" />
                     </AccordionTrigger>
                     <AccordionContent className="p-6 pt-0">
-                         <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[50px]"></TableHead>
-                                <TableHead>Title</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                            {savedPrompts.map((prompt) => (
-                                <TableRow key={prompt.id}>
-                                <TableCell>
-                                    {prompt.isFavorite && <Heart className="h-5 w-5 text-red-500 fill-current" />}
-                                </TableCell>
-                                <TableCell className="font-medium">{prompt.title}</TableCell>
-                                <TableCell>{prompt.date}</TableCell>
-                                <TableCell>
-                                    <Badge variant={prompt.isSaved ? 'default' : 'secondary'}>
-                                    {prompt.isSaved && <Bookmark className="mr-1 h-3 w-3" />}
-                                    Saved
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleViewPrompt(prompt)}>View Prompt</DropdownMenuItem>
-                                        <DropdownMenuItem>Remove Favorite</DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
+                         {prompts.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[50px]"></TableHead>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                {prompts.map((prompt) => (
+                                    <TableRow key={prompt.id}>
+                                    <TableCell>
+                                        <button onClick={() => toggleFavorite(prompt.id)}>
+                                            <Heart className={cn("h-5 w-5 text-gray-400", prompt.isFavorite && "text-red-500 fill-current")} />
+                                        </button>
+                                    </TableCell>
+                                    <TableCell className="font-medium">{prompt.title}</TableCell>
+                                    <TableCell>{new Date(prompt.date).toLocaleDateString()}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={prompt.isSaved ? 'default' : 'secondary'}>
+                                        {prompt.isSaved && <Bookmark className="mr-1 h-3 w-3" />}
+                                        Saved
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleViewPrompt(prompt)}>View Prompt</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => toggleFavorite(prompt.id)}>
+                                                {prompt.isFavorite ? 'Remove Favorite' : 'Add Favorite'}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem className="text-destructive" onClick={() => removePrompt(prompt.id)}>Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                         ) : (
+                            <p className="text-center text-muted-foreground py-8">You have not saved any prompts yet.</p>
+                         )}
                     </AccordionContent>
                 </Card>
             </AccordionItem>
@@ -474,7 +470,7 @@ function DashboardContent() {
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl">{selectedPrompt.title}</DialogTitle>
           <DialogDescription>
-            Saved on {selectedPrompt.date}
+            Saved on {new Date(selectedPrompt.date).toLocaleString()}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -497,5 +493,3 @@ export default function DashboardPage() {
         </AppLayout>
     )
 }
-
-    

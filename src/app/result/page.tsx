@@ -15,24 +15,28 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/app-layout';
+import { usePrompts } from '@/hooks/use-prompts';
 
 function ResultContent() {
   const searchParams = useSearchParams();
-  const prompt = searchParams.get('prompt');
+  const promptText = searchParams.get('prompt');
   const initialTitle = searchParams.get('title');
 
+  const { addPrompt } = usePrompts();
   const [title, setTitle] = useState(initialTitle || 'Untitled Prompt');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [date, setDate] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const { toast } = useToast();
 
   useEffect(() => {
     // Set date only on client-side to avoid hydration mismatch
-    setDate(new Date().toLocaleString());
+    setDate(new Date().toISOString());
   }, []);
 
-  if (!prompt) {
+  if (!promptText) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
         <p className="text-lg text-muted-foreground">No prompt was generated.</p>
@@ -46,11 +50,28 @@ function ResultContent() {
   }
 
   const handleSave = () => {
-    toast({ title: 'Success', description: 'Prompt saved successfully!' });
+    if (promptText) {
+        addPrompt({
+            id: crypto.randomUUID(),
+            title,
+            prompt: promptText,
+            date,
+            isSaved: true,
+            isFavorite: isFavorited,
+        });
+        setIsSaved(true);
+        toast({ title: 'Success', description: 'Prompt saved successfully!' });
+    }
   };
   
   const handleFavorite = () => {
-    toast({ title: 'Success', description: 'Prompt added to favorites!' });
+    setIsFavorited(!isFavorited);
+    toast({ title: 'Success', description: `Prompt ${!isFavorited ? 'added to' : 'removed from'} favorites!` });
+    if (isSaved) {
+        // To update favorite status on an already saved prompt, we can re-save it.
+        // This is a simplification. A more robust solution might have an `updatePrompt` function.
+        handleSave();
+    }
   };
 
   return (
@@ -70,18 +91,21 @@ function ResultContent() {
                           <Button size="icon" variant="ghost" onClick={() => setIsEditingTitle(true)}><Pen/></Button>
                       </div>
                    )}
-                  <p className="text-sm text-muted-foreground mt-1">{date}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{new Date(date).toLocaleString()}</p>
               </div>
               <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={handleSave}><Bookmark className="mr-2"/> Save</Button>
-                  <Button variant="outline" onClick={handleFavorite}><Heart className="mr-2"/> Favorite</Button>
+                  <Button variant="outline" onClick={handleSave} disabled={isSaved}><Bookmark className="mr-2"/> {isSaved ? 'Saved' : 'Save'}</Button>
+                  <Button variant="outline" onClick={handleFavorite}>
+                    <Heart className={`mr-2 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`}/> 
+                    Favorite
+                  </Button>
               </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-8">
             <div>
               <h3 className="text-lg font-headline mb-2">Your Generated Prompt</h3>
-              <PromptOutput prompt={prompt} />
+              <PromptOutput prompt={promptText} />
             </div>
         </CardContent>
         <CardFooter>

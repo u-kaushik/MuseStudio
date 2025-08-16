@@ -6,7 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { WandSparkles, Info, CheckCircle } from 'lucide-react';
+import { WandSparkles, Info, CheckCircle, Edit } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -23,7 +23,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { brandPalettes } from '@/app/dashboard/page';
-import { Slider } from './ui/slider';
 import { Progress } from './ui/progress';
 
 
@@ -87,18 +86,19 @@ const MOODS = [
     { value: 'moody-contrast', label: 'Moody Contrast', description: 'Dramatic, emotional, and intense.' },
 ];
 
+const LIGHTING_OPTIONS = [
+    { value: 'soft', label: 'Soft', description: 'Diffused, even light with subtle shadows, creating a gentle and flattering look.' },
+    { value: 'neutral', label: 'Neutral', description: 'Balanced lighting that mimics natural daylight, providing a clear and realistic feel.' },
+    { value: 'hard', label: 'Hard', description: 'Creates sharp, well-defined shadows and highlights, adding drama and contrast.' },
+];
+
+
 const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
     { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
 ]
-
-const LIGHTING_LABELS: {[key: number]: string} = {
-  0: 'Soft',
-  50: 'Neutral',
-  100: 'Hard'
-};
 
 
 const FormLabelBlack = React.forwardRef<
@@ -119,10 +119,9 @@ FormLabelBlack.displayName = "FormLabelBlack"
 export function AdvancedPromptForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const [lightingValue, setLightingValue] = useState(50);
   const { toast } = useToast();
   const router = useRouter();
-  const TOTAL_STEPS = 5;
+  const TOTAL_STEPS = 6;
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -138,24 +137,24 @@ export function AdvancedPromptForm() {
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
       dominantColor: '#CDB385',
-      lighting: 'Neutral',
+      lighting: '',
       pose: '',
     },
     mode: 'onTouched'
   });
   
-  const watchBrandPalette = form.watch('brandPalette');
-  const watchFaceShape = form.watch('faceShape');
-  const watchComplexion = form.watch('complexion');
-  const watchBodyShape = form.watch('bodyShape');
-  const selectedPalette = brandPalettes.find(p => p.name === watchBrandPalette);
+  const watchAllFields = form.watch();
+  const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
+  
+  const getLabelForValue = (options: {value: string, label: string}[], value: string) => {
+    return options.find(o => o.value === value)?.label || value;
+  };
 
   useEffect(() => {
-    const palette = brandPalettes.find(p => p.name === watchBrandPalette);
-    if (palette && palette.colors.length > 0) {
-      form.setValue('dominantColor', palette.colors[0], { shouldValidate: true });
+    if (selectedPalette && selectedPalette.colors.length > 0) {
+      form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
     }
-  }, [watchBrandPalette, form]);
+  }, [selectedPalette, form]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -165,7 +164,6 @@ export function AdvancedPromptForm() {
         ...values,
         ethnicity: values.complexion,
         brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : [],
-        lighting: values.lighting,
       }
       if (typeof values.brandPalette === 'string' && values.brandPalette.length > 0 && values.brandPalette !== 'none') {
         const paletteName = values.brandPalette;
@@ -211,17 +209,19 @@ export function AdvancedPromptForm() {
         case 4:
             fieldsToValidate = ['mood', 'lighting'];
             break;
+        case 5:
+            fieldsToValidate = ['pose'];
+            break;
         default:
             fieldsToValidate = [];
             break;
     }
 
-    if (fieldsToValidate.length > 0 && step < TOTAL_STEPS) {
+    if (fieldsToValidate.length > 0) {
         const isValid = await form.trigger(fieldsToValidate);
         if (!isValid) return;
     }
     
-    // Don't validate step 5 fields until submit
     if (step < TOTAL_STEPS) {
         setStep(prev => prev + 1);
     }
@@ -239,7 +239,7 @@ export function AdvancedPromptForm() {
         <CardHeader>
           <CardTitle className="font-headline text-4xl">Advanced Mode</CardTitle>
           <CardDescription>Use the multi-step wizard to craft a detailed prompt for your campaign.</CardDescription>
-          <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mt-4" />
+          <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mt-4 h-2" />
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -323,7 +323,7 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                            {watchFaceShape && (
+                            {watchAllFields.faceShape && (
                                 <FormField
                                     control={form.control}
                                     name="complexion"
@@ -363,7 +363,7 @@ export function AdvancedPromptForm() {
                                     )}
                                 />
                             )}
-                            {watchComplexion && (
+                            {watchAllFields.complexion && (
                                 <FormField
                                     control={form.control}
                                     name="bodyShape"
@@ -388,7 +388,7 @@ export function AdvancedPromptForm() {
                                     )}
                                 />
                             )}
-                            {watchBodyShape && (
+                            {watchAllFields.bodyShape && (
                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                                     <div className="space-y-0.5">
                                         <Label className="text-base">Uniformity</Label>
@@ -567,36 +567,31 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                             <FormField
-                                control={form.control}
-                                name="lighting"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex justify-between items-center mb-2">
+                             {watchAllFields.mood && (
+                                <FormField
+                                    control={form.control}
+                                    name="lighting"
+                                    render={({ field }) => (
+                                    <FormItem>
                                          <FormLabelBlack className="text-base font-semibold">Light Tone</FormLabelBlack>
-                                         <span className="text-sm text-muted-foreground">{lightingValue in LIGHTING_LABELS ? LIGHTING_LABELS[lightingValue] : 'Neutral'}</span>
-                                    </div>
-                                    <FormControl>
-                                        <Slider
-                                            defaultValue={[lightingValue]}
-                                            max={100}
-                                            step={50}
-                                            onValueChange={(value) => {
-                                                const singleValue = value[0];
-                                                setLightingValue(singleValue);
-                                                field.onChange(LIGHTING_LABELS[singleValue] || 'Neutral');
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormDescription className='mt-2 space-y-1'>
-                                        <p><span className='font-bold'>Soft:</span> Diffused, even light with subtle shadows, creating a gentle and flattering look.</p>
-                                        <p><span className='font-bold'>Neutral:</span> Balanced lighting that mimics natural daylight, providing a clear and realistic feel.</p>
-                                        <p><span className='font-bold'>Hard:</span> Creates sharp, well-defined shadows and highlights, adding drama and contrast.</p>
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                                        <FormControl>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                {LIGHTING_OPTIONS.map((option) => (
+                                                    <MultiChoiceOption
+                                                        key={option.value}
+                                                        label={option.label}
+                                                        description={option.description}
+                                                        isSelected={field.value === option.value}
+                                                        onSelect={() => field.onChange(option.value)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            )}
                         </CardContent>
                     </Card>
                 )}
@@ -606,7 +601,7 @@ export function AdvancedPromptForm() {
                         <CardHeader>
                             <CardTitle className="font-headline">Step 5: Essence</CardTitle>
                             <CardDescription>Define the pose and expression of your model.</CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent className="space-y-8">
                             <FormField
                                 control={form.control}
@@ -633,6 +628,62 @@ export function AdvancedPromptForm() {
                             />
                         </CardContent>
                     </Card>
+                )}
+
+                {step === 6 && (
+                     <Card className="border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="font-headline">Step 6: Confirmation</CardTitle>
+                            <CardDescription>Review your selections before generating the prompt.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-semibold">Commercial Objective</h4>
+                                        <p className="text-muted-foreground">{getLabelForValue(COMMERCIAL_OBJECTIVES, watchAllFields.commercialObjective)}</p>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={() => setStep(1)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                </div>
+                                <hr />
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-semibold">Morphology</h4>
+                                        <p className="text-muted-foreground">
+                                            {getLabelForValue(FACE_SHAPES, watchAllFields.faceShape)}, {getLabelForValue(COMPLEXIONS.map(c => ({...c, label: `${c.label} ${c.subLabel}`})), watchAllFields.complexion)}, {getLabelForValue(BODY_SHAPES, watchAllFields.bodyShape)}
+                                        </p>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={() => setStep(2)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                </div>
+                                <hr />
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-semibold">Style</h4>
+                                        <p className="text-muted-foreground">
+                                            {getLabelForValue(STYLE_CATEGORIES, watchAllFields.style)}, Dominant Color: <span className="inline-block w-4 h-4 rounded-full" style={{backgroundColor: watchAllFields.dominantColor}}/> {watchAllFields.dominantColor}
+                                        </p>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={() => setStep(3)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                </div>
+                                <hr />
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-semibold">Mood & Lighting</h4>
+                                        <p className="text-muted-foreground">{getLabelForValue(MOODS, watchAllFields.mood)}, {getLabelForValue(LIGHTING_OPTIONS, watchAllFields.lighting)}</p>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={() => setStep(4)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                </div>
+                                <hr />
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="font-semibold">Essence</h4>
+                                        <p className="text-muted-foreground">{getLabelForValue(POSES, watchAllFields.pose)}</p>
+                                    </div>
+                                    <Button variant="ghost" size="sm" onClick={() => setStep(5)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                     </Card>
                 )}
 
 
