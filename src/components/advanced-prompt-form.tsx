@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { WandSparkles, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, useFormField } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +23,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { brandPalettes } from '@/app/dashboard/page';
+import { Slider } from './ui/slider';
+
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -30,11 +32,12 @@ const formSchema = z.object({
   complexion: z.string().min(1, 'Complexion is required.'),
   bodyShape: z.string().min(1, "Body shape is required"),
   gender: z.string().default('female'),
+  clothingType: z.string().min(1, "Clothing type is required"),
   style: z.string().min(1, 'Style is required.'),
   mood: z.string().min(1, 'Mood is required.'),
+  lighting: z.string().min(1, 'Lighting is required.'),
   intensity: z.number().min(0).max(100),
-  clothingType: z.string().min(1, "Clothing type is required"),
-  brandPalette: z.array(z.string()).min(1, "Please select at least one color").or(z.string()),
+  brandPalette: z.string().optional(),
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
   dominantColor: z.string().optional(),
@@ -76,17 +79,27 @@ const STYLE_CATEGORIES = [
     { value: 'outerwear', label: 'Outerwear' },
 ]
 
+const MOODS = [
+    { value: 'bright-airy', label: 'Bright & Airy', description: 'Light, open, and cheerful.' },
+    { value: 'neutral-studio', label: 'Neutral Studio', description: 'Clean, professional, and focused.' },
+    { value: 'moody-contrast', label: 'Moody Contrast', description: 'Dramatic, emotional, and intense.' },
+];
+
+const LIGHTING_LABELS: {[key: number]: string} = {
+  0: 'Soft',
+  50: 'Neutral',
+  100: 'Hard'
+};
+
+
 const FormLabelBlack = React.forwardRef<
   React.ElementRef<typeof Label>,
   React.ComponentPropsWithoutRef<typeof Label>
 >(({ className, ...props }, ref) => {
-  const { formItemId } = useFormField()
-
   return (
     <Label
       ref={ref}
       className={cn(className)}
-      htmlFor={formItemId}
       {...props}
     />
   )
@@ -97,6 +110,7 @@ FormLabelBlack.displayName = "FormLabelBlack"
 export function AdvancedPromptForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [lightingValue, setLightingValue] = useState(50);
   const { toast } = useToast();
   const router = useRouter();
   
@@ -108,13 +122,14 @@ export function AdvancedPromptForm() {
       complexion: '',
       bodyShape: '',
       intensity: 50,
-      brandPalette: [],
+      brandPalette: '',
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
       style: '',
       mood: '',
       clothingType: '',
       dominantColor: '#CDB385',
+      lighting: 'Neutral',
     },
     mode: 'onTouched'
   });
@@ -137,21 +152,17 @@ export function AdvancedPromptForm() {
        const mappedValues = {
         ...values,
         ethnicity: values.complexion,
-        brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : values.brandPalette,
+        brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : [],
+        lighting: LIGHTING_LABELS[lightingValue] || 'Neutral',
       }
-      if (typeof mappedValues.brandPalette === 'string') {
-        const paletteName = mappedValues.brandPalette;
+      if (typeof values.brandPalette === 'string' && values.brandPalette.length > 0) {
+        const paletteName = values.brandPalette;
         const selectedPalette = brandPalettes.find(p => p.name === paletteName);
         if (selectedPalette) {
             mappedValues.brandPalette = selectedPalette.colors;
         } else {
             mappedValues.brandPalette = [];
         }
-      }
-
-      if (values.dominantColor && (typeof watchBrandPalette === 'string' && watchBrandPalette.length > 0)) {
-         // A brand palette is selected, so we should use its colors.
-         // We can choose to use the first color as the dominant one, or pass the palette name
       } else if (values.dominantColor) {
         mappedValues.brandPalette = [values.dominantColor];
       }
@@ -183,7 +194,10 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['clothingType', 'style', 'mood'];
+            fieldsToValidate = ['clothingType', 'style'];
+            break;
+        case 4:
+            fieldsToValidate = ['mood', 'lighting'];
             break;
         default:
             fieldsToValidate = [];
@@ -261,7 +275,7 @@ export function AdvancedPromptForm() {
                             <CardDescription>Define the physical characteristics of your model.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8">
-                             <FormField
+                            <FormField
                                 control={form.control}
                                 name="faceShape"
                                 render={({ field }) => (
@@ -299,7 +313,7 @@ export function AdvancedPromptForm() {
                                             {COMPLEXIONS.map((option) => (
                                                 <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
                                                 <FormControl>
-                                                    <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has-[:checked]:border-primary w-full cursor-pointer">
+                                                    <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has[:checked]:border-primary w-full cursor-pointer">
                                                     <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
                                                     <Label htmlFor={option.value} className="font-normal cursor-pointer text-center">
                                                         <p className="font-bold">{option.label}</p>
@@ -315,7 +329,7 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                             <FormField
+                            <FormField
                                 control={form.control}
                                 name="bodyShape"
                                 render={({ field }) => (
@@ -374,7 +388,7 @@ export function AdvancedPromptForm() {
                         <CardContent className="space-y-8">
                              <FormField
                                 control={form.control}
-                                name="clothingType"
+                                name="style"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabelBlack className="text-base font-semibold">Style Category</FormLabelBlack>
@@ -402,7 +416,7 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                             <FormField
+                            <FormField
                                 control={form.control}
                                 name="dominantColor"
                                 render={({ field }) => (
@@ -425,7 +439,7 @@ export function AdvancedPromptForm() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabelBlack className="text-base font-semibold">Brand Palette</FormLabelBlack>
-                                    <Select onValueChange={field.onChange} defaultValue={typeof field.value === 'string' ? field.value : ''}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a brand palette" />
@@ -454,10 +468,69 @@ export function AdvancedPromptForm() {
                     </Card>
                 )}
 
+                {step === 4 && (
+                    <Card className="border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="font-headline">Step 4: Mood & Lighting</CardTitle>
+                            <CardDescription>Define the atmosphere and lighting of your visuals.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-8">
+                            <FormField
+                                control={form.control}
+                                name="mood"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabelBlack className="text-base font-semibold">Mood</FormLabelBlack>
+                                        <FormControl>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                {MOODS.map((mood) => (
+                                                    <MultiChoiceOption
+                                                        key={mood.value}
+                                                        label={mood.label}
+                                                        description={mood.description}
+                                                        isSelected={field.value === mood.value}
+                                                        onSelect={() => field.onChange(mood.value)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="lighting"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <div className="flex justify-between items-center mb-2">
+                                         <FormLabelBlack className="text-base font-semibold">Light Tone</FormLabelBlack>
+                                         <span className="text-sm text-muted-foreground">{LIGHTING_LABELS[lightingValue]}</span>
+                                    </div>
+                                    <FormControl>
+                                        <Slider
+                                            defaultValue={[50]}
+                                            max={100}
+                                            step={50}
+                                            onValueChange={(value) => {
+                                                const singleValue = value[0];
+                                                setLightingValue(singleValue);
+                                                field.onChange(LIGHTING_LABELS[singleValue]);
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
+
 
               <div className="flex justify-between pt-4">
                   {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
-                  {step < 3 ? (
+                  {step < 4 ? (
                       <Button type="button" onClick={nextStep}>Next</Button>
                   ) : (
                     <Button type="submit" disabled={isLoading}>
@@ -473,5 +546,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    

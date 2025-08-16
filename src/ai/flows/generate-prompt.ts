@@ -20,6 +20,7 @@ const GenerateBasicPromptInputSchema = z.object({
   brandPalette: z.array(z.string()).describe('The brand palette to use.'),
   style: z.string().describe('The brand style.'),
   mood: z.string().describe('The brand mood.'),
+  lighting: z.string().describe('The lighting of the scene.'),
   intensity: z.number().describe('How closely to adhere to the prompt.'),
   brandGuidelinesText: z.string().optional().describe('Textual brand guidelines.'),
 });
@@ -50,6 +51,7 @@ Clothing Type: {{{clothingType}}}
 Brand Palette: {{{brandPalette}}}
 Style: {{{style}}}
 Mood: {{{mood}}}
+Lighting: {{{lighting}}}
 Intensity: {{{intensity}}}
 {{#if brandGuidelinesText}}
 Brand Vibe: {{{brandGuidelinesText}}}
