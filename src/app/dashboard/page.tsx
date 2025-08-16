@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building, GraduationCap, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 
 import { Icons } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
@@ -56,6 +57,7 @@ function DashboardContent() {
   const [isAddCampaignOpen, setAddCampaignOpen] = useState(false);
   const [workspaceType, setWorkspaceType] = useState('');
   const [hasLifetimeAccess, setHasLifetimeAccess] = useState(false);
+  const [courseProgress, setCourseProgress] = useState(25); // Example progress
 
   const brand = clients.find(c => c.id === 'fashion-brand-details');
 
@@ -112,18 +114,27 @@ function DashboardContent() {
                 <div className="flex items-center gap-4">
                     <GraduationCap className="h-8 w-8 text-accent" />
                     <div>
-                        <CardTitle>M.U.S.E. Lessons</CardTitle>
-                        <CardDescription>Unlock the full potential of AI with our expert-led mini-course.</CardDescription>
+                        <CardTitle>M.U.S.E. Launch</CardTitle>
+                        <CardDescription>Create commercially ready AI fashion models</CardDescription>
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
-                <div className="flex items-center justify-between rounded-lg border bg-card-foreground/5 p-4">
-                    <p className="font-medium">Get started with the M.U.S.E. framework.</p>
+            <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Progress</span>
+                        <span>{courseProgress}%</span>
+                    </div>
+                    <Progress value={courseProgress} />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border bg-card-foreground/5 p-6">
+                    <p className="font-medium text-lg">Get started with the M.U.S.E. framework.</p>
                     {hasLifetimeAccess ? (
                         <Badge variant="secondary">Lifetime Access</Badge>
                     ) : (
-                        <Button>Enroll Now</Button>
+                         <Button asChild>
+                            <Link href="/">Get Started</Link>
+                        </Button>
                     )}
                 </div>
             </CardContent>
@@ -417,3 +428,5 @@ export default function DashboardPage() {
         </AppLayout>
     )
 }
+
+    
