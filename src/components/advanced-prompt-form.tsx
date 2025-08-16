@@ -469,72 +469,76 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="brandPalette"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabelBlack className="text-base font-semibold">Brand Palette</FormLabelBlack>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a brand palette" />
-                                        </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="none">None</SelectItem>
-                                            {brandPalettes.map((palette) => (
-                                                <SelectItem key={palette.name} value={palette.name}>
-                                                    <div className="flex items-center gap-2">
-                                                        {palette.colors.map(color => <div key={color} className="h-4 w-4 rounded-full border" style={{backgroundColor: color}} />)}
-                                                        <span>{palette.name}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormDescription>
-                                        Select a saved brand palette. This will influence the dominant color.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="dominantColor"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
-                                    <FormControl>
-                                        {selectedPalette ? (
-                                             <Select onValueChange={field.onChange} value={field.value}>
+                            {watchAllFields.style && (
+                                <>
+                                    <FormField
+                                        control={form.control}
+                                        name="brandPalette"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelBlack className="text-base font-semibold">Brand Palette</FormLabelBlack>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select a dominant color" />
+                                                    <SelectValue placeholder="Select a brand palette" />
                                                 </SelectTrigger>
+                                                </FormControl>
                                                 <SelectContent>
-                                                    {selectedPalette.colors.map((color) => (
-                                                        <SelectItem key={color} value={color}>
+                                                    <SelectItem value="none">None</SelectItem>
+                                                    {brandPalettes.map((palette) => (
+                                                        <SelectItem key={palette.name} value={palette.name}>
                                                             <div className="flex items-center gap-2">
-                                                                <div className="h-4 w-4 rounded-full border" style={{backgroundColor: color}} />
-                                                                <span>{color}</span>
+                                                                {palette.colors.map(color => <div key={color} className="h-4 w-4 rounded-full border" style={{backgroundColor: color}} />)}
+                                                                <span>{palette.name}</span>
                                                             </div>
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                        ) : (
-                                            <ColorPicker
-                                                background={field.value!}
-                                                onChange={field.onChange}
-                                            />
+                                            <FormDescription>
+                                                Select a saved brand palette. This will influence the dominant color.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
                                         )}
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="dominantColor"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelBlack className="text-base font-semibold">Dominant Clothing/Prop Color</FormLabelBlack>
+                                            <FormControl>
+                                                {selectedPalette ? (
+                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select a dominant color" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {selectedPalette.colors.map((color) => (
+                                                                <SelectItem key={color} value={color}>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="h-4 w-4 rounded-full border" style={{backgroundColor: color}} />
+                                                                        <span>{color}</span>
+                                                                    </div>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                ) : (
+                                                    <ColorPicker
+                                                        background={field.value!}
+                                                        onChange={field.onChange}
+                                                    />
+                                                )}
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 )}
