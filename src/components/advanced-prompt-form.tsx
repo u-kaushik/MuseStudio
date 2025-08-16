@@ -122,7 +122,7 @@ export function AdvancedPromptForm() {
       complexion: '',
       bodyShape: '',
       intensity: 50,
-      brandPalette: '',
+      brandPalette: 'none',
       brandGuidelinesFile: null,
       brandGuidelinesText: '',
       style: '',
@@ -155,7 +155,7 @@ export function AdvancedPromptForm() {
         brandPalette: typeof values.brandPalette === 'string' ? [values.brandPalette] : [],
         lighting: LIGHTING_LABELS[lightingValue] || 'Neutral',
       }
-      if (typeof values.brandPalette === 'string' && values.brandPalette.length > 0) {
+      if (typeof values.brandPalette === 'string' && values.brandPalette.length > 0 && values.brandPalette !== 'none') {
         const paletteName = values.brandPalette;
         const selectedPalette = brandPalettes.find(p => p.name === paletteName);
         if (selectedPalette) {
@@ -194,7 +194,7 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['clothingType', 'style'];
+            fieldsToValidate = ['style', 'clothingType'];
             break;
         case 4:
             fieldsToValidate = ['mood', 'lighting'];
@@ -318,6 +318,7 @@ export function AdvancedPromptForm() {
                                                                 'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
                                                                 field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                                                             )}
+                                                            onClick={() => field.onChange(option.value)}
                                                         >
                                                             {field.value === option.value && (
                                                                 <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
@@ -325,7 +326,7 @@ export function AdvancedPromptForm() {
                                                                 </div>
                                                             )}
                                                             <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                            <Label htmlFor={option.value} className="font-normal cursor-pointer">
+                                                            <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
                                                                 <p className="font-bold">{option.label}</p>
                                                                 <p className="text-muted-foreground">{option.subLabel}</p>
                                                             </Label>
@@ -436,7 +437,7 @@ export function AdvancedPromptForm() {
                                             <ColorPicker
                                                 background={field.value!}
                                                 onChange={field.onChange}
-                                                className={cn((typeof watchBrandPalette === 'string' && watchBrandPalette.length > 0) && 'opacity-50 pointer-events-none')}
+                                                className={cn((typeof watchBrandPalette === 'string' && watchBrandPalette.length > 0 && watchBrandPalette !== 'none') && 'opacity-50 pointer-events-none')}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -456,7 +457,7 @@ export function AdvancedPromptForm() {
                                         </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="">None</SelectItem>
+                                            <SelectItem value="none">None</SelectItem>
                                             {brandPalettes.map((palette) => (
                                                 <SelectItem key={palette.name} value={palette.name}>
                                                     <div className="flex items-center gap-2">
