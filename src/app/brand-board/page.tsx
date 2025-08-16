@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Bookmark, Heart, MoreHorizontal, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
 import { Icons } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
+import { useClients, Client } from '@/hooks/use-clients';
+import { AddClientForm } from '@/components/add-client-form';
 
 type Prompt = {
   id: string;
@@ -32,7 +34,7 @@ const savedPrompts: Prompt[] = [
   { id: '3', 'title': 'Minimalist Activewear', date: '2023-10-22', isFavorite: true, isSaved: true, prompt: 'A non-binary model in minimalist, neutral-toned activewear, clean studio background, geometric shapes, dynamic pose, bright, even lighting.' },
 ];
 
-const brandPalettes = [
+export const brandPalettes = [
   { name: 'Earthy Tones', colors: ['#8B4513', '#A0522D', '#D2B48C', '#F5DEB3', '#2F4F4F'] },
   { name: 'Ocean Blues', colors: ['#00008B', '#0000CD', '#4169E1'] },
   { name: 'Monochrome', colors: ['#000000', '#36454F', '#808080', '#D3D3D3'] },
@@ -40,9 +42,19 @@ const brandPalettes = [
 
 export default function BrandBoardPage() {
   const { user, loading, logout } = useAuth();
+  const { clients, addClient } = useClients();
   const router = useRouter();
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddClientOpen, setAddClientOpen] = useState(false);
+  const [workspaceType, setWorkspaceType] = useState('');
+
+  useEffect(() => {
+    const storedWorkspaceType = localStorage.getItem('workspaceType');
+    if (storedWorkspaceType) {
+      setWorkspaceType(storedWorkspaceType);
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -54,6 +66,11 @@ export default function BrandBoardPage() {
     setSelectedPrompt(prompt);
     setIsDialogOpen(true);
   };
+  
+  const handleAddClient = (client: Omit<Client, 'id'>) => {
+    addClient(client);
+    setAddClientOpen(false);
+  }
 
 
   if (loading || !user) {
@@ -106,6 +123,61 @@ export default function BrandBoardPage() {
                     <Link href="/">Create New Prompt</Link>
                 </Button>
             </div>
+
+          {workspaceType === 'freelancer' && (
+             <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                      <CardTitle>Clients</CardTitle>
+                      <CardDescription>Manage your clients and their brand assets.</CardDescription>
+                  </div>
+                   <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                      <DialogTrigger asChild>
+                           <Button><UserPlus className="mr-2" /> Add Client</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                          <DialogHeader>
+                              <DialogTitle>Add New Client</DialogTitle>
+                              <DialogDescription>
+                                  Enter the details for your new client.
+                              </DialogDescription>
+                          </DialogHeader>
+                          <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} />
+                      </DialogContent>
+                  </Dialog>
+              </CardHeader>
+              <CardContent>
+                {clients.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Client Name</TableHead>
+                        <TableHead>Default Palette</TableHead>
+                        <TableHead>Default Objective</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {clients.map((client) => (
+                        <TableRow key={client.id}>
+                          <TableCell className="font-medium">{client.name}</TableCell>
+                          <TableCell>{client.defaultBrandPalette}</TableCell>
+                          <TableCell>{client.commercialObjective}</TableCell>
+                          <TableCell className="text-right">
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">You haven't added any clients yet.</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
