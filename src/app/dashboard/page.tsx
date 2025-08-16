@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building, GraduationCap, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 
 import { Icons } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
@@ -144,303 +146,304 @@ function DashboardContent() {
             </Button>
         </div>
         
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                 <div className="flex items-center gap-4">
-                    <GraduationCap className="h-8 w-8 text-accent" />
-                    <div>
-                        <CardTitle>M.U.S.E. Launch</CardTitle>
-                        <CardDescription>Create commercially ready AI fashion models</CardDescription>
-                    </div>
-                </div>
-                 {hasLifetimeAccess ? (
-                    <Badge variant="secondary">Lifetime Access</Badge>
-                ) : (
-                    <Button asChild>
-                        <Link href="/">Get Started</Link>
-                    </Button>
-                )}
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {museLessons.map((lesson) => (
-                        <Card key={lesson.letter} className="flex flex-col">
-                            <Image src={lesson.image} data-ai-hint={lesson.hint} alt={lesson.title} width={600} height={400} className="object-cover w-full h-40 rounded-t-lg" />
-                            <CardHeader>
-                                <CardTitle className="font-headline">{lesson.letter}: {lesson.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-grow">
-                                <p className="text-sm text-muted-foreground">{lesson.description}</p>
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2">
-                                <Progress value={lesson.progress} />
-                                <span className="text-xs text-muted-foreground">{lesson.progress}% complete</span>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-
-
-        {workspaceType === 'fashion-brand' && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Your Brand</CardTitle>
-                <CardDescription>Manage your brand name, palette, and objective.</CardDescription>
-              </div>
-              {!brand && (
-                 <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
-                    <DialogTrigger asChild>
-                         <Button><Building className="mr-2" /> Add Brand Details</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add Your Brand Details</DialogTitle>
-                            <DialogDescription>
-                                Enter the details for your brand.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} />
-                    </DialogContent>
-                </Dialog>
-              )}
-            </CardHeader>
-            <CardContent>
-              {brand ? (
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold">Brand Name</h4>
-                    <p>{brand.name}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Default Brand Palette</h4>
-                    <p>{brand.defaultBrandPalette}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Commercial Objective</h4>
-                    <p>{brand.commercialObjective}</p>
-                  </div>
-                   <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
-                      <DialogTrigger asChild>
-                           <Button variant="outline">Edit Brand Details</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                          <DialogHeader>
-                              <DialogTitle>Edit Your Brand Details</DialogTitle>
-                              <DialogDescription>
-                                  Update the details for your brand.
-                              </DialogDescription>
-                          </DialogHeader>
-                          <AddClientForm
-                            onSubmit={handleAddClient}
-                            onCancel={() => setAddClientOpen(false)}
-                            isBrandFlow={true}
-                            initialData={brand}
-                          />
-                      </DialogContent>
-                  </Dialog>
-                </div>
-              ) : (
-                 <p className="text-center text-muted-foreground py-8">You haven't added your brand details yet.</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-
-      {workspaceType === 'freelancer' && (
-         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                  <CardTitle>Clients</CardTitle>
-                  <CardDescription>Manage your clients and their brand assets.</CardDescription>
-              </div>
-               <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
-                  <DialogTrigger asChild>
-                       <Button><UserPlus className="mr-2" /> Add Client</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                      <DialogHeader>
-                          <DialogTitle>Add New Client</DialogTitle>
-                          <DialogDescription>
-                              Enter the details for your new client.
-                          </DialogDescription>
-                      </DialogHeader>
-                      <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} />
-                  </DialogContent>
-              </Dialog>
-          </CardHeader>
-          <CardContent>
-            {clients.filter(c => c.id !== 'fashion-brand-details').length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Client Name</TableHead>
-                    <TableHead>Default Palette</TableHead>
-                    <TableHead>Default Objective</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clients.filter(c => c.id !== 'fashion-brand-details').map((client) => (
-                    <TableRow key={client.id}>
-                      <TableCell className="font-medium">{client.name}</TableCell>
-                      <TableCell>{client.defaultBrandPalette}</TableCell>
-                      <TableCell>{client.commercialObjective}</TableCell>
-                      <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => removeClient(client.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="text-center text-muted-foreground py-8">You haven't added any clients yet.</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Campaigns</CardTitle>
-                <CardDescription>Manage your active and upcoming campaigns.</CardDescription>
-            </div>
-             <Dialog open={isAddCampaignOpen} onOpenChange={setAddCampaignOpen}>
-                  <DialogTrigger asChild>
-                       <Button><PlusCircle className="mr-2" /> Add Campaign</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                      <DialogHeader>
-                          <DialogTitle>Create New Campaign</DialogTitle>
-                          <DialogDescription>
-                              Enter the details for your new campaign.
-                          </DialogDescription>
-                      </DialogHeader>
-                      <AddCampaignForm clients={clients} onSubmit={handleAddCampaign} onCancel={() => setAddCampaignOpen(false)} />
-                  </DialogContent>
-              </Dialog>
-        </CardHeader>
-        <CardContent>
-             {campaigns.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                    <TableRow>
-                        <TableHead>Campaign Name</TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Season</TableHead>
-                        <TableHead>Year</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {campaigns.map((campaign) => (
-                        <TableRow key={campaign.id}>
-                        <TableCell className="font-medium">{campaign.name}</TableCell>
-                        <TableCell>{clients.find(c => c.id === campaign.clientId)?.name || 'N/A'}</TableCell>
-                        <TableCell>{campaign.season}</TableCell>
-                        <TableCell>{campaign.year}</TableCell>
-                        <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
+        <Accordion type="multiple" defaultValue={['muse-launch', 'brand-details', 'clients', 'campaigns', 'saved-prompts', 'brand-palettes']} className="w-full space-y-4">
+            <AccordionItem value="muse-launch" className="border rounded-lg bg-card">
+                <Card>
+                    <AccordionTrigger className="p-6">
+                        <div className="flex items-center gap-4">
+                            <GraduationCap className="h-8 w-8 text-accent" />
+                            <div>
+                                <CardTitle>M.U.S.E. Launch</CardTitle>
+                                <CardDescription>Create commercially ready AI fashion models</CardDescription>
+                            </div>
+                        </div>
+                        {hasLifetimeAccess ? (
+                            <Badge variant="secondary" className="mr-4">Lifetime Access</Badge>
+                        ) : (
+                            <Button asChild className="mr-4">
+                                <Link href="/">Get Started</Link>
                             </Button>
-                        </TableCell>
-                        </TableRow>
-                    ))}
-                    </TableBody>
-                </Table>
-             ) : (
-                <p className="text-center text-muted-foreground py-8">You haven't created any campaigns yet.</p>
-             )}
-        </CardContent>
-      </Card>
-
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Saved Prompts</CardTitle>
-          <CardDescription>All your saved and favorited prompts.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {savedPrompts.map((prompt) => (
-                <TableRow key={prompt.id}>
-                  <TableCell>
-                     {prompt.isFavorite && <Heart className="h-5 w-5 text-red-500 fill-current" />}
-                  </TableCell>
-                  <TableCell className="font-medium">{prompt.title}</TableCell>
-                  <TableCell>{prompt.date}</TableCell>
-                  <TableCell>
-                    <Badge variant={prompt.isSaved ? 'default' : 'secondary'}>
-                      {prompt.isSaved && <Bookmark className="mr-1 h-3 w-3" />}
-                      Saved
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewPrompt(prompt)}>View Prompt</DropdownMenuItem>
-                        <DropdownMenuItem>Remove Favorite</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Brand Palettes</CardTitle>
-                <CardDescription>Your saved color palettes for consistent branding.</CardDescription>
-            </div>
-            <Button>Add New Palette</Button>
-        </CardHeader>
-        <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {brandPalettes.map((palette) => (
-                    <Card key={palette.name}>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="text-lg">{palette.name}</CardTitle>
-                            <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="flex items-center gap-2">
-                            {palette.colors.map((color) => (
-                                <div key={color} className="h-10 w-10 rounded-full border-2 border-muted" style={{ backgroundColor: color }} />
+                        )}
+                    </AccordionTrigger>
+                    <AccordionContent className="p-6 pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {museLessons.map((lesson) => (
+                                <Card key={lesson.letter} className="flex flex-col">
+                                    <Image src={lesson.image} data-ai-hint={lesson.hint} alt={lesson.title} width={600} height={400} className="object-cover w-full h-40 rounded-t-lg" />
+                                    <CardHeader>
+                                        <CardTitle className="font-headline">{lesson.letter}: {lesson.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow">
+                                        <p className="text-sm text-muted-foreground">{lesson.description}</p>
+                                    </CardContent>
+                                    <CardFooter className="flex-col items-start gap-2">
+                                        <Progress value={lesson.progress} />
+                                        <span className="text-xs text-muted-foreground">{lesson.progress}% complete</span>
+                                    </CardFooter>
+                                </Card>
                             ))}
-                        </CardContent>
+                        </div>
+                    </AccordionContent>
+                </Card>
+            </AccordionItem>
+
+            {workspaceType === 'fashion-brand' && (
+                <AccordionItem value="brand-details" className="border rounded-lg bg-card">
+                    <Card>
+                        <AccordionTrigger className="p-6">
+                            <div>
+                                <CardTitle>Your Brand</CardTitle>
+                                <CardDescription>Manage your brand name, palette, and objective.</CardDescription>
+                            </div>
+                             {!brand && (
+                                <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button className="mr-4"><Building className="mr-2" /> Add Brand Details</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Add Your Brand Details</DialogTitle>
+                                            <DialogDescription>Enter the details for your brand.</DialogDescription>
+                                        </DialogHeader>
+                                        <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} />
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </AccordionTrigger>
+                        <AccordionContent className="p-6 pt-0">
+                             {brand ? (
+                                <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-semibold">Brand Name</h4>
+                                    <p>{brand.name}</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">Default Brand Palette</h4>
+                                    <p>{brand.defaultBrandPalette}</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">Commercial Objective</h4>
+                                    <p>{brand.commercialObjective}</p>
+                                </div>
+                                <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline">Edit Brand Details</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Edit Your Brand Details</DialogTitle>
+                                            <DialogDescription>Update the details for your brand.</DialogDescription>
+                                        </DialogHeader>
+                                        <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} isBrandFlow={true} initialData={brand}/>
+                                    </DialogContent>
+                                </Dialog>
+                                </div>
+                            ) : (
+                                <p className="text-center text-muted-foreground py-8">You haven't added your brand details yet.</p>
+                            )}
+                        </AccordionContent>
                     </Card>
-                ))}
-            </div>
-        </CardContent>
-      </Card>
+                </AccordionItem>
+            )}
+
+            {workspaceType === 'freelancer' && (
+                <AccordionItem value="clients" className="border rounded-lg bg-card">
+                    <Card>
+                         <AccordionTrigger className="p-6">
+                            <div>
+                                <CardTitle>Clients</CardTitle>
+                                <CardDescription>Manage your clients and their brand assets.</CardDescription>
+                            </div>
+                             <Dialog open={isAddClientOpen} onOpenChange={setAddClientOpen}>
+                                <DialogTrigger asChild>
+                                    <Button className="mr-4"><UserPlus className="mr-2" /> Add Client</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Client</DialogTitle>
+                                        <DialogDescription>Enter the details for your new client.</DialogDescription>
+                                    </DialogHeader>
+                                    <AddClientForm onSubmit={handleAddClient} onCancel={() => setAddClientOpen(false)} />
+                                </DialogContent>
+                            </Dialog>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-6 pt-0">
+                           {clients.filter(c => c.id !== 'fashion-brand-details').length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>Client Name</TableHead>
+                                    <TableHead>Default Palette</TableHead>
+                                    <TableHead>Default Objective</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {clients.filter(c => c.id !== 'fashion-brand-details').map((client) => (
+                                    <TableRow key={client.id}>
+                                    <TableCell className="font-medium">{client.name}</TableCell>
+                                    <TableCell>{client.defaultBrandPalette}</TableCell>
+                                    <TableCell>{client.commercialObjective}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon" onClick={() => removeClient(client.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            ) : (
+                            <p className="text-center text-muted-foreground py-8">You haven't added any clients yet.</p>
+                            )}
+                        </AccordionContent>
+                    </Card>
+                </AccordionItem>
+            )}
+            
+            <AccordionItem value="campaigns" className="border rounded-lg bg-card">
+                 <Card>
+                    <AccordionTrigger className="p-6">
+                        <div>
+                            <CardTitle>Campaigns</CardTitle>
+                            <CardDescription>Manage your active and upcoming campaigns.</CardDescription>
+                        </div>
+                        <Dialog open={isAddCampaignOpen} onOpenChange={setAddCampaignOpen}>
+                            <DialogTrigger asChild>
+                                <Button className="mr-4"><PlusCircle className="mr-2" /> Add Campaign</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Create New Campaign</DialogTitle>
+                                    <DialogDescription>Enter the details for your new campaign.</DialogDescription>
+                                </DialogHeader>
+                                <AddCampaignForm clients={clients} onSubmit={handleAddCampaign} onCancel={() => setAddCampaignOpen(false)} />
+                            </DialogContent>
+                        </Dialog>
+                    </AccordionTrigger>
+                    <AccordionContent className="p-6 pt-0">
+                        {campaigns.length > 0 ? (
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>Campaign Name</TableHead>
+                                    <TableHead>Client</TableHead>
+                                    <TableHead>Season</TableHead>
+                                    <TableHead>Year</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {campaigns.map((campaign) => (
+                                    <TableRow key={campaign.id}>
+                                    <TableCell className="font-medium">{campaign.name}</TableCell>
+                                    <TableCell>{clients.find(c => c.id === campaign.clientId)?.name || 'N/A'}</TableCell>
+                                    <TableCell>{campaign.season}</TableCell>
+                                    <TableCell>{campaign.year}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                        ) : (
+                            <p className="text-center text-muted-foreground py-8">You haven't created any campaigns yet.</p>
+                        )}
+                    </AccordionContent>
+                </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="saved-prompts" className="border rounded-lg bg-card">
+                 <Card>
+                    <AccordionTrigger className="p-6">
+                         <div>
+                            <CardTitle>Saved Prompts</CardTitle>
+                            <CardDescription>All your saved and favorited prompts.</CardDescription>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="p-6 pt-0">
+                         <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[50px]"></TableHead>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {savedPrompts.map((prompt) => (
+                                <TableRow key={prompt.id}>
+                                <TableCell>
+                                    {prompt.isFavorite && <Heart className="h-5 w-5 text-red-500 fill-current" />}
+                                </TableCell>
+                                <TableCell className="font-medium">{prompt.title}</TableCell>
+                                <TableCell>{prompt.date}</TableCell>
+                                <TableCell>
+                                    <Badge variant={prompt.isSaved ? 'default' : 'secondary'}>
+                                    {prompt.isSaved && <Bookmark className="mr-1 h-3 w-3" />}
+                                    Saved
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleViewPrompt(prompt)}>View Prompt</DropdownMenuItem>
+                                        <DropdownMenuItem>Remove Favorite</DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    </AccordionContent>
+                </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="brand-palettes" className="border rounded-lg bg-card">
+                 <Card>
+                    <AccordionTrigger className="p-6">
+                        <div>
+                            <CardTitle>Brand Palettes</CardTitle>
+                            <CardDescription>Your saved color palettes for consistent branding.</CardDescription>
+                        </div>
+                        <Button className="mr-4">Add New Palette</Button>
+                    </AccordionTrigger>
+                    <AccordionContent className="p-6 pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {brandPalettes.map((palette) => (
+                                <Card key={palette.name}>
+                                    <CardHeader className="flex flex-row items-center justify-between">
+                                        <CardTitle className="text-lg">{palette.name}</CardTitle>
+                                        <Button variant="ghost" size="icon">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </CardHeader>
+                                    <CardContent className="flex items-center gap-2">
+                                        {palette.colors.map((color) => (
+                                            <div key={color} className="h-10 w-10 rounded-full border-2 border-muted" style={{ backgroundColor: color }} />
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </AccordionContent>
+                </Card>
+            </AccordionItem>
+        </Accordion>
+
 
    {selectedPrompt && (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
