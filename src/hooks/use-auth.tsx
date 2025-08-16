@@ -25,7 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
       if (user) {
         const workspaceType = localStorage.getItem('workspaceType');
-        if (!workspaceType) {
+        if (workspaceType) {
+          router.push('/dashboard');
+        } else {
           router.push('/onboarding/workspace-type');
         }
       }
@@ -46,6 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await signOut(auth);
+    localStorage.removeItem('workspaceType');
+    localStorage.removeItem('client-storage');
+    localStorage.removeItem('campaign-storage');
     router.push('/auth');
   };
 

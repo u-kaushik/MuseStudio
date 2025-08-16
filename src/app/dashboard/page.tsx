@@ -10,13 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building } from 'lucide-react';
+import { Bookmark, Heart, MoreHorizontal, Trash2, UserPlus, Building, GraduationCap, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 
 import { Icons } from '@/components/icons';
 import { useAuth } from '@/hooks/use-auth';
 import { useClients, Client } from '@/hooks/use-clients';
+import { useCampaigns, Campaign } from '@/hooks/use-campaigns';
 import { AddClientForm } from '@/components/add-client-form';
+import { AddCampaignForm } from '@/components/add-campaign-form';
 
 type Prompt = {
   id: string;
@@ -40,16 +42,27 @@ export const brandPalettes = [
   { name: 'Monochrome', colors: ['#000000', '#36454F', '#808080', '#D3D3D3'] },
 ];
 
-export default function BrandBoardPage() {
+const lifetimeAccessUsers = ['ukaushik37@gmail.com', 'vay.kaushik@gmail.com'];
+
+export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
-  const { clients, addClient } = useClients();
+  const { clients, addClient, removeClient } = useClients();
+  const { campaigns, addCampaign } = useCampaigns();
   const router = useRouter();
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddClientOpen, setAddClientOpen] = useState(false);
+  const [isAddCampaignOpen, setAddCampaignOpen] = useState(false);
   const [workspaceType, setWorkspaceType] = useState('');
+  const [hasLifetimeAccess, setHasLifetimeAccess] = useState(false);
 
   const brand = clients.find(c => c.id === 'fashion-brand-details');
+
+  useEffect(() => {
+    if (user && user.email) {
+      setHasLifetimeAccess(lifetimeAccessUsers.includes(user.email));
+    }
+  }, [user]);
 
   useEffect(() => {
     const storedWorkspaceType = localStorage.getItem('workspaceType');
@@ -75,6 +88,10 @@ export default function BrandBoardPage() {
     setAddClientOpen(false);
   };
 
+  const handleAddCampaign = (campaign: Omit<Campaign, 'id'>) => {
+    addCampaign({ ...campaign, id: crypto.randomUUID() });
+    setAddCampaignOpen(false);
+  }
 
   if (loading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -109,7 +126,7 @@ export default function BrandBoardPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigateTo('/brand-board')}>Brand Board</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigateTo('/dashboard')}>Dashboard</DropdownMenuItem>
               <DropdownMenuItem onClick={navigateToSettings}>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -121,11 +138,33 @@ export default function BrandBoardPage() {
       <main className="flex-1 p-4 sm:p-6 md:p-8">
         <div className="mx-auto max-w-6xl space-y-8">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-headline">Brand Board</h1>
+                <h1 className="text-3xl font-headline">Dashboard</h1>
                  <Button asChild>
                     <Link href="/">Create New Prompt</Link>
                 </Button>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-4">
+                        <GraduationCap className="h-8 w-8 text-accent" />
+                        <div>
+                            <CardTitle>M.U.S.E. Lessons</CardTitle>
+                            <CardDescription>Unlock the full potential of AI with our expert-led mini-course.</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between rounded-lg border bg-card-foreground/5 p-4">
+                        <p className="font-medium">Get started with the M.U.S.E. framework.</p>
+                        {hasLifetimeAccess ? (
+                            <Badge variant="secondary">Lifetime Access</Badge>
+                        ) : (
+                            <Button>Enroll Now</Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
 
             {workspaceType === 'fashion-brand' && (
               <Card>
@@ -217,7 +256,7 @@ export default function BrandBoardPage() {
                   </Dialog>
               </CardHeader>
               <CardContent>
-                {clients.length > 0 ? (
+                {clients.filter(c => c.id !== 'fashion-brand-details').length > 0 ? (
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -234,7 +273,7 @@ export default function BrandBoardPage() {
                           <TableCell>{client.defaultBrandPalette}</TableCell>
                           <TableCell>{client.commercialObjective}</TableCell>
                           <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" onClick={() => removeClient(client.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                           </TableCell>
@@ -248,6 +287,62 @@ export default function BrandBoardPage() {
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Campaigns</CardTitle>
+                    <CardDescription>Manage your active and upcoming campaigns.</CardDescription>
+                </div>
+                 <Dialog open={isAddCampaignOpen} onOpenChange={setAddCampaignOpen}>
+                      <DialogTrigger asChild>
+                           <Button><PlusCircle className="mr-2" /> Add Campaign</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                          <DialogHeader>
+                              <DialogTitle>Create New Campaign</DialogTitle>
+                              <DialogDescription>
+                                  Enter the details for your new campaign.
+                              </DialogDescription>
+                          </DialogHeader>
+                          <AddCampaignForm clients={clients} onSubmit={handleAddCampaign} onCancel={() => setAddCampaignOpen(false)} />
+                      </DialogContent>
+                  </Dialog>
+            </CardHeader>
+            <CardContent>
+                 {campaigns.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Campaign Name</TableHead>
+                            <TableHead>Client</TableHead>
+                            <TableHead>Season</TableHead>
+                            <TableHead>Year</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {campaigns.map((campaign) => (
+                            <TableRow key={campaign.id}>
+                            <TableCell className="font-medium">{campaign.name}</TableCell>
+                            <TableCell>{clients.find(c => c.id === campaign.clientId)?.name || 'N/A'}</TableCell>
+                            <TableCell>{campaign.season}</TableCell>
+                            <TableCell>{campaign.year}</TableCell>
+                            <TableCell className="text-right">
+                                <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                 ) : (
+                    <p className="text-center text-muted-foreground py-8">You haven't created any campaigns yet.</p>
+                 )}
+            </CardContent>
+          </Card>
+
 
           <Card>
             <CardHeader>
