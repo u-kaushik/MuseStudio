@@ -22,6 +22,7 @@ import { Slider } from './ui/slider';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { brandPalettes } from '@/app/dashboard/page';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   commercialObjective: z.string().min(1, 'Commercial objective is required.'),
@@ -112,7 +113,7 @@ export function BasicPromptForm() {
     }
   }, [searchParams, form]);
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: 'brandPalette',
   });
@@ -193,6 +194,13 @@ export function BasicPromptForm() {
       setIsLoading(false);
     }
   }
+
+  const handlePaletteSelect = (paletteName: string) => {
+    const selectedPalette = brandPalettes.find(p => p.name === paletteName);
+    if (selectedPalette) {
+      replace(selectedPalette.colors.slice(0, 5).map(color => color));
+    }
+  };
   
   if (isLoading) {
     return <GeneratingAnimation />;
@@ -291,6 +299,27 @@ export function BasicPromptForm() {
                             ))}
                              {currentFormStep.type === 'color-picker' && (
                                 <div className="space-y-8">
+                                    <FormItem>
+                                        <FormLabel>Choose a pre-saved palette (optional)</FormLabel>
+                                        <Select onValueChange={handlePaletteSelect}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                <SelectValue placeholder="Select a saved palette" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {brandPalettes.map((palette) => (
+                                                <SelectItem key={palette.name} value={palette.name}>
+                                                    <div className="flex items-center gap-2">
+                                                    {palette.colors.map(color => <div key={color} className="h-4 w-4 rounded-full border" style={{ backgroundColor: color }} />)}
+                                                    <span>{palette.name}</span>
+                                                    </div>
+                                                </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+
                                     <FormItem>
                                         <FormControl>
                                             <div className="flex flex-col md:flex-row gap-4">
@@ -396,3 +425,5 @@ export function BasicPromptForm() {
     </div>
   );
 }
+
+    
