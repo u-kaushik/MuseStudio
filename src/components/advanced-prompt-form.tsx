@@ -135,6 +135,9 @@ export function AdvancedPromptForm() {
   });
   
   const watchBrandPalette = form.watch('brandPalette');
+  const watchFaceShape = form.watch('faceShape');
+  const watchComplexion = form.watch('complexion');
+  const watchBodyShape = form.watch('bodyShape');
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -194,7 +197,7 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
             break;
         case 3:
-            fieldsToValidate = ['style', 'clothingType'];
+            fieldsToValidate = ['style', 'clothingType', 'dominantColor'];
             break;
         case 4:
             fieldsToValidate = ['mood', 'lighting'];
@@ -261,7 +264,7 @@ export function AdvancedPromptForm() {
                                                                     </div>
                                                                 )}
                                                                 <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
+                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full text-left">
                                                                     <p className="font-bold">{option.label}</p>
                                                                     <p className="text-muted-foreground">{option.description}</p>
                                                                 </Label>
@@ -309,94 +312,100 @@ export function AdvancedPromptForm() {
                                     </FormItem>
                                 )}
                             />
-                             <FormField
-                                control={form.control}
-                                name="complexion"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabelBlack className="text-base font-semibold">Complexion</FormLabelBlack>
-                                        <FormControl>
-                                            <RadioGroup
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            className="grid grid-cols-2 md:grid-cols-3 gap-4"
-                                            >
-                                            {COMPLEXIONS.map((option) => (
-                                                <FormItem key={option.value} className="flex-grow">
-                                                    <FormControl>
-                                                        <div 
-                                                            className={cn(
-                                                                'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
-                                                                field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-                                                            )}
-                                                            onClick={() => field.onChange(option.value)}
-                                                        >
-                                                            {field.value === option.value && (
-                                                                <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
-                                                                    <CheckCircle className="h-6 w-6" />
-                                                                </div>
-                                                            )}
-                                                            <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                            <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
-                                                                <p className="font-bold">{option.label}</p>
-                                                                <p className="text-muted-foreground">{option.subLabel}</p>
-                                                            </Label>
-                                                        </div>
-                                                    </FormControl>
-                                                </FormItem>
-                                            ))}
-                                            </RadioGroup>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="bodyShape"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabelBlack className="text-base font-semibold">Body Shape</FormLabelBlack>
-                                        <FormControl>
-                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                {BODY_SHAPES.map((shape) => (
-                                                    <MultiChoiceOption
-                                                        key={shape.value}
-                                                        label={shape.label}
-                                                        description={shape.description}
-                                                        isSelected={field.value === shape.value}
-                                                        onSelect={() => field.onChange(shape.value)}
-                                                    />
+                            {watchFaceShape && (
+                                <FormField
+                                    control={form.control}
+                                    name="complexion"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelBlack className="text-base font-semibold">Complexion</FormLabelBlack>
+                                            <FormControl>
+                                                <RadioGroup
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                                                >
+                                                {COMPLEXIONS.map((option) => (
+                                                    <FormItem key={option.value} className="flex-grow">
+                                                        <FormControl>
+                                                            <div 
+                                                                className={cn(
+                                                                    'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
+                                                                    field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                                                                )}
+                                                                onClick={() => field.onChange(option.value)}
+                                                            >
+                                                                {field.value === option.value && (
+                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                        <CheckCircle className="h-6 w-6" />
+                                                                    </div>
+                                                                )}
+                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
+                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
+                                                                    <p className="font-bold">{option.label}</p>
+                                                                    <p className="text-muted-foreground">{option.subLabel}</p>
+                                                                </Label>
+                                                            </div>
+                                                        </FormControl>
+                                                    </FormItem>
                                                 ))}
-                                            </div>
+                                                </RadioGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                            {watchComplexion && (
+                                <FormField
+                                    control={form.control}
+                                    name="bodyShape"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelBlack className="text-base font-semibold">Body Shape</FormLabelBlack>
+                                            <FormControl>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    {BODY_SHAPES.map((shape) => (
+                                                        <MultiChoiceOption
+                                                            key={shape.value}
+                                                            label={shape.label}
+                                                            description={shape.description}
+                                                            isSelected={field.value === shape.value}
+                                                            onSelect={() => field.onChange(shape.value)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                            {watchBodyShape && (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label className="text-base">Uniformity</Label>
+                                        <FormDescription>
+                                            Master texture, material, and consistency.
+                                        </FormDescription>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Info className="h-4 w-4 text-muted-foreground" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>This feature is coming soon!</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                        <FormControl>
+                                            <Switch disabled />
                                         </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                <div className="space-y-0.5">
-                                    <Label className="text-base">Uniformity</Label>
-                                    <FormDescription>
-                                        Master texture, material, and consistency.
-                                    </FormDescription>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                     <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Info className="h-4 w-4 text-muted-foreground" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>This feature is coming soon!</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <FormControl>
-                                        <Switch disabled />
-                                    </FormControl>
-                                </div>
-                            </FormItem>
+                                    </div>
+                                </FormItem>
+                            )}
                         </CardContent>
                     </Card>
                 )}
@@ -421,11 +430,22 @@ export function AdvancedPromptForm() {
                                                 className="grid grid-cols-2 md:grid-cols-4 gap-4"
                                             >
                                                 {STYLE_CATEGORIES.map(option => (
-                                                    <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
+                                                    <FormItem key={option.value} className="flex-grow">
                                                         <FormControl>
-                                                            <div className="p-4 border rounded-lg has-[:checked]:bg-primary/10 has-[:checked]:border-primary w-full cursor-pointer">
+                                                             <div 
+                                                                className={cn(
+                                                                    'relative rounded-lg p-4 cursor-pointer group border-2 bg-card text-center',
+                                                                    field.value === option.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                                                                )}
+                                                                onClick={() => field.onChange(option.value)}
+                                                            >
+                                                                {field.value === option.value && (
+                                                                    <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                        <CheckCircle className="h-6 w-6" />
+                                                                    </div>
+                                                                )}
                                                                 <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer text-center w-full">
+                                                                <Label htmlFor={option.value} className="font-normal cursor-pointer w-full h-full">
                                                                     <p className="font-bold">{option.label}</p>
                                                                 </Label>
                                                             </div>
