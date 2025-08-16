@@ -53,7 +53,7 @@ const analyzeImageFlow = ai.defineFlow(
     const {output} = await ai.generate({
       prompt: analyzeImagePrompt,
       input: input,
-      model: 'googleai/gemini-pro-vision',
+      model: 'googleai/gemini-1.5-flash-latest',
     });
     return output!;
   }
