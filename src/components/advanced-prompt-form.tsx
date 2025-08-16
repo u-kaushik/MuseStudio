@@ -97,7 +97,7 @@ const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
-    { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
+    { value: 'seated-power', label: 'Posed while seated, conveying authority and control.' },
 ]
 
 
