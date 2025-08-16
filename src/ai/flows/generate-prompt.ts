@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const GenerateBasicPromptInputSchema = z.object({
   commercialObjective: z.string().describe('The commercial objective of the campaign.'),
-  gender: z.string().describe("The model's gender."),
+  gender: z.string().optional().describe("The model's gender."),
   ethnicity: z.string().describe("The model's ethnicity."),
   clothingType: z.string().describe("The type of clothing the model is wearing."),
   brandPalette: z.array(z.string()).describe('The brand palette to use.'),
@@ -46,7 +46,7 @@ const prompt = ai.definePrompt({
   prompt: `Generate a prompt and a short, catchy title for an image generation model based on the following criteria:
 
 Commercial Objective: {{{commercialObjective}}}
-Model Gender: {{{gender}}}
+{{#if gender}}Model Gender: {{{gender}}}{{/if}}
 Model Ethnicity (Complexion): {{{ethnicity}}}
 Clothing Type: {{{clothingType}}}
 Brand Palette: {{{brandPalette}}}

@@ -130,6 +130,7 @@ export function AdvancedPromptForm() {
       faceShape: '',
       complexion: '',
       bodyShape: '',
+      gender: 'female',
       style: '',
       mood: '',
       intensity: 50,
@@ -173,9 +174,17 @@ export function AdvancedPromptForm() {
         }
 
        const mappedValues: GenerateBasicPromptInput = {
-        ...values,
+        commercialObjective: values.commercialObjective,
         ethnicity: values.complexion,
+        clothingType: values.clothingType || '',
         brandPalette: brandPaletteColors,
+        style: values.style,
+        mood: values.mood,
+        lighting: values.lighting,
+        intensity: values.intensity,
+        brandGuidelinesText: values.brandGuidelinesText,
+        pose: values.pose,
+        gender: values.gender,
       }
 
       const result = await generateBasicPrompt(mappedValues);
@@ -680,5 +689,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
