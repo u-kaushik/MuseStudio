@@ -23,6 +23,7 @@ const GenerateBasicPromptInputSchema = z.object({
   lighting: z.string().describe('The lighting of the scene.'),
   intensity: z.number().describe('How closely to adhere to the prompt.'),
   brandGuidelinesText: z.string().optional().describe('Textual brand guidelines.'),
+  pose: z.string().describe("The model's pose."),
 });
 
 export type GenerateBasicPromptInput = z.infer<typeof GenerateBasicPromptInputSchema>;
@@ -52,6 +53,7 @@ Brand Palette: {{{brandPalette}}}
 Style: {{{style}}}
 Mood: {{{mood}}}
 Lighting: {{{lighting}}}
+Pose: {{{pose}}}
 Intensity: {{{intensity}}}
 {{#if brandGuidelinesText}}
 Brand Vibe: {{{brandGuidelinesText}}}

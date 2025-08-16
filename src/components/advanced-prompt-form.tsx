@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { brandPalettes } from '@/app/dashboard/page';
 import { Slider } from './ui/slider';
+import { Progress } from './ui/progress';
 
 
 const formSchema = z.object({
@@ -41,6 +42,7 @@ const formSchema = z.object({
   brandGuidelinesFile: z.any().optional(),
   brandGuidelinesText: z.string().optional(),
   dominantColor: z.string().min(1, 'Dominant color is required.'),
+  pose: z.string().min(1, 'Pose is required.'),
 });
 
 const COMMERCIAL_OBJECTIVES = [
@@ -85,6 +87,13 @@ const MOODS = [
     { value: 'moody-contrast', label: 'Moody Contrast', description: 'Dramatic, emotional, and intense.' },
 ];
 
+const POSES = [
+    { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
+    { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
+    { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
+    { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
+]
+
 const LIGHTING_LABELS: {[key: number]: string} = {
   0: 'Soft',
   50: 'Neutral',
@@ -113,6 +122,7 @@ export function AdvancedPromptForm() {
   const [lightingValue, setLightingValue] = useState(50);
   const { toast } = useToast();
   const router = useRouter();
+  const TOTAL_STEPS = 5;
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -129,6 +139,7 @@ export function AdvancedPromptForm() {
       brandGuidelinesText: '',
       dominantColor: '#CDB385',
       lighting: 'Neutral',
+      pose: '',
     },
     mode: 'onTouched'
   });
@@ -195,17 +206,20 @@ export function AdvancedPromptForm() {
         case 3:
             fieldsToValidate = ['style', 'dominantColor'];
             break;
+        case 4:
+            fieldsToValidate = ['mood', 'lighting'];
+            break;
         default:
             fieldsToValidate = [];
             break;
     }
 
-    if (fieldsToValidate.length > 0) {
+    if (fieldsToValidate.length > 0 && step < TOTAL_STEPS) {
         const isValid = await form.trigger(fieldsToValidate);
         if (!isValid) return;
     }
 
-    if (step < 4) {
+    if (step < TOTAL_STEPS) {
         setStep(prev => prev + 1);
     }
   };
@@ -222,6 +236,7 @@ export function AdvancedPromptForm() {
         <CardHeader>
           <CardTitle className="font-headline text-4xl">Advanced Mode</CardTitle>
           <CardDescription>Use the multi-step wizard to craft a detailed prompt for your campaign.</CardDescription>
+          <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mt-4" />
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -570,7 +585,7 @@ export function AdvancedPromptForm() {
                                             }}
                                         />
                                     </FormControl>
-                                    <FormDescription className='mt-2'>
+                                    <FormDescription className='mt-2 space-y-1'>
                                         <p><span className='font-bold'>Soft:</span> Diffused, even light with subtle shadows, creating a gentle and flattering look.</p>
                                         <p><span className='font-bold'>Neutral:</span> Balanced lighting that mimics natural daylight, providing a clear and realistic feel.</p>
                                         <p><span className='font-bold'>Hard:</span> Creates sharp, well-defined shadows and highlights, adding drama and contrast.</p>
@@ -583,10 +598,44 @@ export function AdvancedPromptForm() {
                     </Card>
                 )}
 
+                {step === 5 && (
+                    <Card className="border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="font-headline">Step 5: Essence</CardTitle>
+                            <CardDescription>Define the pose and expression of your model.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-8">
+                            <FormField
+                                control={form.control}
+                                name="pose"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabelBlack className="text-base font-semibold">Pose</FormLabelBlack>
+                                        <FormControl>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                {POSES.map((pose) => (
+                                                    <MultiChoiceOption
+                                                        key={pose.value}
+                                                        label={pose.label}
+                                                        description={pose.description}
+                                                        isSelected={field.value === pose.value}
+                                                        onSelect={() => field.onChange(pose.value)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
+
 
               <div className="flex justify-between pt-4">
                   {step > 1 ? (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>) : <div/>}
-                  {step < 4 ? (
+                  {step < TOTAL_STEPS ? (
                       <Button type="button" onClick={nextStep}>Next</Button>
                   ) : (
                     <Button type="submit" disabled={isLoading}>
