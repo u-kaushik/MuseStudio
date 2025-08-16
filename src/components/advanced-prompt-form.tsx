@@ -50,17 +50,17 @@ const COMMERCIAL_OBJECTIVES = [
 ];
 
 const FACE_SHAPES = [
-    { value: 'diamond', label: 'Diamond', description: 'Narrow forehead and jawline with wider cheekbones.', image: 'https://placehold.co/600x400.png', hint: 'diamond face woman' },
-    { value: 'oval', label: 'Oval', description: 'Balanced proportions, slightly wider at the cheekbones.', image: 'https://placehold.co/600x400.png', hint: 'oval face woman' },
-    { value: 'square', label: 'Square', description: 'Strong jawline, broad forehead, and square chin.', image: 'https://placehold.co/600x400.png', hint: 'square face woman' },
-    { value: 'heart', label: 'Heart', description: 'Wider forehead that tapers down to a narrow chin.', image: 'https://placehold.co/600x400.png', hint: 'heart face woman' },
+    { value: 'diamond', label: 'Diamond', description: 'Narrow forehead and jawline with wider cheekbones.' },
+    { value: 'oval', label: 'Oval', description: 'Balanced proportions, slightly wider at the cheekbones.' },
+    { value: 'square', label: 'Square', description: 'Strong jawline, broad forehead, and square chin.' },
+    { value: 'heart', label: 'Heart', description: 'Wider forehead that tapers down to a narrow chin.' },
 ]
 
 const BODY_SHAPES = [
-    { value: 'hourglass', label: 'Hourglass', description: 'Balanced bust and hips with a defined waist.', image: 'https://placehold.co/600x400.png', hint: 'hourglass figure' },
-    { value: 'rectangle', label: 'Rectangle', description: 'Straight silhouette with similar bust, waist, and hip measurements.', image: 'https://placehold.co/600x400.png', hint: 'rectangle body shape' },
-    { value: 'pear', label: 'Pear', description: 'Wider hips and thighs with a smaller bust and waist.', image: 'https://placehold.co/600x400.png', hint: 'pear body shape' },
-    { value: 'inverted-triangle', label: 'Inverted Triangle', description: 'Broader shoulders and bust that narrow down to the hips.', image: 'https://placehold.co/600x400.png', hint: 'inverted triangle body' },
+    { value: 'hourglass', label: 'Hourglass', description: 'Balanced bust and hips with a defined waist.' },
+    { value: 'rectangle', label: 'Rectangle', description: 'Straight silhouette with similar bust, waist, and hip measurements.' },
+    { value: 'pear', label: 'Pear', description: 'Wider hips and thighs with a smaller bust and waist.' },
+    { value: 'inverted-triangle', label: 'Inverted Triangle', description: 'Broader shoulders and bust that narrow down to the hips.' },
 ]
 
 const COMPLEXIONS = [
@@ -201,7 +201,7 @@ export function AdvancedPromptForm() {
                                 name="faceShape"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Face Shape</FormLabel>
+                                        <FormLabel className="text-base font-semibold">Face Shape</FormLabel>
                                         <FormControl>
                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 {FACE_SHAPES.map((shape) => (
@@ -209,8 +209,6 @@ export function AdvancedPromptForm() {
                                                         key={shape.value}
                                                         label={shape.label}
                                                         description={shape.description}
-                                                        image={shape.image}
-                                                        data-ai-hint={shape.hint}
                                                         isSelected={field.value === shape.value}
                                                         onSelect={() => field.onChange(shape.value)}
                                                     />
@@ -226,7 +224,7 @@ export function AdvancedPromptForm() {
                                 name="complexion"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Complexion</FormLabel>
+                                        <FormLabel className="text-base font-semibold">Complexion</FormLabel>
                                         <FormControl>
                                             <RadioGroup
                                             onValueChange={field.onChange}
@@ -257,7 +255,7 @@ export function AdvancedPromptForm() {
                                 name="bodyShape"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Body Shape</FormLabel>
+                                        <FormLabel className="text-base font-semibold">Body Shape</FormLabel>
                                         <FormControl>
                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                 {BODY_SHAPES.map((shape) => (
@@ -265,8 +263,6 @@ export function AdvancedPromptForm() {
                                                         key={shape.value}
                                                         label={shape.label}
                                                         description={shape.description}
-                                                        image={shape.image}
-                                                        data-ai-hint={shape.hint}
                                                         isSelected={field.value === shape.value}
                                                         onSelect={() => field.onChange(shape.value)}
                                                     />
