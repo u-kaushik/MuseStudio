@@ -97,7 +97,7 @@ const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
-    { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
+    { value: 'seated-power', label: 'Posed while seated, conveying authority and control.' },
 ]
 
 
@@ -145,11 +145,11 @@ export function AdvancedPromptForm() {
   
   const watchAllFields = form.watch();
   const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
-  
+
   const getLabelForValue = (options: {value: string, label: string}[], value: string) => {
     return options.find(o => o.value === value)?.label || value;
   };
-
+  
   useEffect(() => {
     if (selectedPalette && selectedPalette.colors.length > 0) {
       form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
@@ -218,12 +218,14 @@ export function AdvancedPromptForm() {
     }
 
     if (fieldsToValidate.length > 0) {
-        const isValid = await form.trigger(fieldsToValidate);
-        if (!isValid) return;
+      const isValid = await form.trigger(fieldsToValidate);
+      if (!isValid) return;
     }
     
     if (step < TOTAL_STEPS) {
-        setStep(prev => prev + 1);
+      setStep(prev => prev + 1);
+    } else {
+      await form.handleSubmit(onSubmit)();
     }
   };
 
