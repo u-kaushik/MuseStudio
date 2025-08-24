@@ -11,7 +11,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 
 function getInitialTab(tabParam: string | null) {
-  if (tabParam === 'advanced') {
+  if (tabParam === 'guided') {
     return tabParam;
   }
   return 'auto';
@@ -59,7 +59,7 @@ function HomePageContentComponent() {
               <TabsTrigger value="auto">
                 Auto Mode
               </TabsTrigger>
-              <TabsTrigger value="advanced">Advanced Mode</TabsTrigger>
+              <TabsTrigger value="guided">Guided Mode</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="auto" className="mt-6">
@@ -67,7 +67,7 @@ function HomePageContentComponent() {
               <BasicPromptForm />
             </div>
           </TabsContent>
-          <TabsContent value="advanced" className="mt-6">
+          <TabsContent value="guided" className="mt-6">
             <div className="mx-auto max-w-4xl">
               <AdvancedPromptForm />
             </div>

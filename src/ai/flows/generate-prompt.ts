@@ -26,6 +26,7 @@ const GenerateBasicPromptInputSchema = z.object({
   pose: z.string().describe("The model's pose."),
   faceShape: z.string().describe("The model's face shape."),
   bodyShape: z.string().describe("The model's body shape."),
+  bodySize: z.string().describe("The model's body size (e.g., lean, average, plus size)."),
 });
 
 export type GenerateBasicPromptInput = z.infer<typeof GenerateBasicPromptInputSchema>;
@@ -49,7 +50,7 @@ const prompt = ai.definePrompt({
 
 Commercial Objective: {{{commercialObjective}}}
 {{#if gender}}Model Gender: {{{gender}}}{{/if}}
-Model Morphology: A model with a {{{faceShape}}} face shape, {{{ethnicity}}} complexion, and a {{{bodyShape}}} body shape.
+Model Morphology: A model with a {{{faceShape}}} face shape, {{{ethnicity}}} complexion, a {{{bodyShape}}} body shape, and a {{{bodySize}}} build.
 Clothing Type: {{{clothingType}}}
 Brand Palette: {{{brandPalette}}}
 Style: {{{style}}}

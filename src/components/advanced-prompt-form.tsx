@@ -20,7 +20,7 @@ import { GeneratingAnimation } from './generating-animation';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { MultiChoiceOption } from './multi-choice-option';
 import { Switch } from './ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { brandPalettes } from '@/app/dashboard/page';
@@ -32,6 +32,7 @@ const formSchema = z.object({
   faceShape: z.string().min(1, "Face shape is required"),
   complexion: z.string().min(1, 'Complexion is required.'),
   bodyShape: z.string().min(1, "Body shape is required"),
+  bodySize: z.string().min(1, "Body size is required"),
   gender: z.string().optional(),
   clothingType: z.string().optional(),
   style: z.string().min(1, 'Style is required.'),
@@ -63,6 +64,12 @@ const BODY_SHAPES = [
     { value: 'rectangle', label: 'Rectangle', description: 'Straight silhouette with similar bust, waist, and hip measurements.' },
     { value: 'pear', label: 'Pear', description: 'Wider hips and thighs with a smaller bust and waist.' },
     { value: 'inverted-triangle', label: 'Inverted Triangle', description: 'Broader shoulders and bust that narrow down to the hips.' },
+]
+
+const BODY_SIZES = [
+    { value: 'lean', label: 'Lean', description: 'Slender and athletic build.' },
+    { value: 'average', label: 'Average', description: 'A balanced and typical build.' },
+    { value: 'plus-size', label: 'Plus Size', description: 'A fuller and more robust build.' },
 ]
 
 const COMPLEXIONS = [
@@ -127,7 +134,7 @@ export function AdvancedPromptForm() {
   const [step, setStep] = useState(1);
   const { toast } = useToast();
   const router = useRouter();
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 7;
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -136,6 +143,7 @@ export function AdvancedPromptForm() {
       faceShape: '',
       complexion: '',
       bodyShape: '',
+      bodySize: '',
       gender: 'female',
       style: '',
       mood: '',
@@ -172,7 +180,7 @@ export function AdvancedPromptForm() {
 
 
        const mappedValues: GenerateBasicPromptInput = {
-        commercialObjective: values.commercialObjective,
+        commercialObjective: COMMERCIAL_OBJECTIVES.find(o => o.value === values.commercialObjective)?.label || values.commercialObjective,
         gender: values.gender,
         ethnicity: values.complexion,
         clothingType: values.clothingType || values.style,
@@ -185,6 +193,7 @@ export function AdvancedPromptForm() {
         pose: values.pose,
         faceShape: values.faceShape,
         bodyShape: values.bodyShape,
+        bodySize: values.bodySize,
       }
 
       const result = await generateBasicPrompt(mappedValues);
@@ -212,7 +221,7 @@ export function AdvancedPromptForm() {
             fieldsToValidate = ['commercialObjective'];
             break;
         case 2:
-            fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
+            fieldsToValidate = ['faceShape', 'complexion', 'bodyShape', 'bodySize'];
             break;
         case 3:
             fieldsToValidate = ['style', 'dominantColor'];
@@ -222,6 +231,9 @@ export function AdvancedPromptForm() {
             break;
         case 5:
             fieldsToValidate = ['pose'];
+            break;
+        case 6:
+            // No validation needed for uniformity step
             break;
         default:
             break;
@@ -263,7 +275,7 @@ export function AdvancedPromptForm() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-4xl">Advanced Mode</CardTitle>
+          <CardTitle className="font-headline text-4xl">Guided Mode</CardTitle>
           <CardDescription>Use the multi-step wizard to craft a detailed prompt for your campaign.</CardDescription>
           <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mt-4 h-2" />
         </CardHeader>
@@ -285,13 +297,7 @@ export function AdvancedPromptForm() {
                                     <FormItem>
                                         <FormControl>
                                             <RadioGroup
-                                                onValueChange={(value) => {
-                                                    field.onChange(value);
-                                                    if (value === 'product-detail') {
-                                                        const label = COMMERCIAL_OBJECTIVES.find(o => o.value === value)?.label || ''
-                                                        form.setValue('commercialObjective', label);
-                                                    }
-                                                }}
+                                                onValueChange={field.onChange}
                                                 defaultValue={field.value}
                                                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
                                             >
@@ -421,38 +427,72 @@ export function AdvancedPromptForm() {
                                 />
                             )}
                             {watchAllFields.bodyShape && (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <Label className="text-base">Uniformity</Label>
-                                        <FormDescription>
-                                            Master texture, material, and consistency.
-                                        </FormDescription>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Info className="h-4 w-4 text-muted-foreground" />
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>This feature is coming soon!</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                        <FormControl>
-                                            <Switch disabled />
-                                        </FormControl>
-                                    </div>
-                                </FormItem>
+                                <FormField
+                                    control={form.control}
+                                    name="bodySize"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelBlack className="text-base font-semibold">Body Size</FormLabelBlack>
+                                            <FormControl>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    {BODY_SIZES.map((size) => (
+                                                        <MultiChoiceOption
+                                                            key={size.value}
+                                                            label={size.label}
+                                                            description={size.description}
+                                                            isSelected={field.value === size.value}
+                                                            onSelect={() => field.onChange(size.value)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             )}
                         </CardContent>
                     </Card>
                 )}
-
+                
                 {step === 3 && (
+                    <Card className="border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="font-headline">Step 3: Uniformity</CardTitle>
+                            <CardDescription>Master texture, material, and consistency in your visuals.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Enable Uniformity Controls</Label>
+                                    <FormDescription>
+                                        Define texture, material, and consistency.
+                                    </FormDescription>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Info className="h-4 w-4 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>This feature is coming soon!</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <FormControl>
+                                        <Switch disabled />
+                                    </FormControl>
+                                </div>
+                            </FormItem>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {step === 4 && (
                      <Card className="border-0 shadow-none">
                         <CardHeader>
-                            <CardTitle className="font-headline">Step 3: Style</CardTitle>
+                            <CardTitle className="font-headline">Step 4: Style</CardTitle>
                             <CardDescription>Define the artistic direction of your visuals.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8">
@@ -568,11 +608,11 @@ export function AdvancedPromptForm() {
                     </Card>
                 )}
 
-                {step === 4 && (
+                {step === 5 && (
                     <Card className="border-0 shadow-none">
                         <CardHeader>
-                            <CardTitle className="font-headline">Step 4: Mood & Lighting</CardTitle>
-                            <CardDescription>Define the atmosphere and lighting of your visuals.</CardDescription>
+                            <CardTitle className="font-headline">Step 5: Essence</CardTitle>
+                            <CardDescription>Define the mood, lighting, and pose of your visuals.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8">
                              <FormField
@@ -627,48 +667,73 @@ export function AdvancedPromptForm() {
                                     )}
                                 />
                             )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {step === 5 && (
-                    <Card className="border-0 shadow-none">
-                        <CardHeader>
-                            <CardTitle className="font-headline">Step 5: Essence</CardTitle>
-                            <CardDescription>Define the pose and expression of your model.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-8">
-                            <FormField
-                                control={form.control}
-                                name="pose"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabelBlack className="text-base font-semibold">Pose</FormLabelBlack>
-                                        <FormControl>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                {POSES.map((pose) => (
-                                                    <MultiChoiceOption
-                                                        key={pose.value}
-                                                        label={pose.label}
-                                                        description={pose.description}
-                                                        isSelected={field.value === pose.value}
-                                                        onSelect={() => field.onChange(pose.value)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            {watchAllFields.lighting && (
+                                 <FormField
+                                    control={form.control}
+                                    name="pose"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabelBlack className="text-base font-semibold">Pose</FormLabelBlack>
+                                            <FormControl>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    {POSES.map((pose) => (
+                                                        <MultiChoiceOption
+                                                            key={pose.value}
+                                                            label={pose.label}
+                                                            description={pose.description}
+                                                            isSelected={field.value === pose.value}
+                                                            onSelect={() => field.onChange(pose.value)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </CardContent>
                     </Card>
                 )}
 
                 {step === 6 && (
+                    <Card className="border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="font-headline">Step 6: Photography</CardTitle>
+                            <CardDescription>Define the technical photography settings.</CardDescription>
+                        </CardHeader>
+                         <CardContent>
+                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Enable Photography Controls</Label>
+                                    <FormDescription>
+                                        Define camera angle, lens, and film stock.
+                                    </FormDescription>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Info className="h-4 w-4 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>This feature is coming soon!</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <FormControl>
+                                        <Switch disabled />
+                                    </FormControl>
+                                </div>
+                            </FormItem>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {step === 7 && (
                      <Card className="border-0 shadow-none">
                         <CardHeader>
-                            <CardTitle className="font-headline">Step 6: Confirmation</CardTitle>
+                            <CardTitle className="font-headline">Step 7: Confirmation</CardTitle>
                             <CardDescription>Review your selections before generating the prompt.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -685,7 +750,7 @@ export function AdvancedPromptForm() {
                                     <div>
                                         <h4 className="font-semibold">Morphology</h4>
                                         <p className="text-muted-foreground">
-                                            {getLabelForValue(FACE_SHAPES, watchAllFields.faceShape)}, {getLabelForValue(COMPLEXIONS.map(c => ({...c, label: `${c.label} ${c.subLabel}`})), watchAllFields.complexion)}, {getLabelForValue(BODY_SHAPES, watchAllFields.bodyShape)}
+                                            {getLabelForValue(FACE_SHAPES, watchAllFields.faceShape)}, {getLabelForValue(COMPLEXIONS.map(c => ({...c, label: `${c.label} ${c.subLabel}`})), watchAllFields.complexion)}, {getLabelForValue(BODY_SHAPES, watchAllFields.bodyShape)}, {getLabelForValue(BODY_SIZES, watchAllFields.bodySize)}
                                         </p>
                                     </div>
                                     <Button variant="ghost" size="sm" onClick={() => setStep(2)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
@@ -698,21 +763,13 @@ export function AdvancedPromptForm() {
                                             {getLabelForValue(STYLE_CATEGORIES, watchAllFields.style)}, Dominant Color: <span className="inline-block w-4 h-4 rounded-full" style={{backgroundColor: watchAllFields.dominantColor}}/> {watchAllFields.dominantColor}
                                         </p>
                                     </div>
-                                    <Button variant="ghost" size="sm" onClick={() => setStep(3)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                                </div>
-                                <hr />
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <h4 className="font-semibold">Mood & Lighting</h4>
-                                        <p className="text-muted-foreground">{getLabelForValue(MOODS, watchAllFields.mood)}, {getLabelForValue(LIGHTING_OPTIONS, watchAllFields.lighting)}</p>
-                                    </div>
                                     <Button variant="ghost" size="sm" onClick={() => setStep(4)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
                                 </div>
                                 <hr />
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <h4 className="font-semibold">Essence</h4>
-                                        <p className="text-muted-foreground">{getLabelForValue(POSES, watchAllFields.pose)}</p>
+                                        <p className="text-muted-foreground">{getLabelForValue(MOODS, watchAllFields.mood)}, {getLabelForValue(LIGHTING_OPTIONS, watchAllFields.lighting)}, {getLabelForValue(POSES, watchAllFields.pose)}</p>
                                     </div>
                                     <Button variant="ghost" size="sm" onClick={() => setStep(5)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
                                 </div>
