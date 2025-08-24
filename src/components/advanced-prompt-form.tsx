@@ -176,7 +176,7 @@ export function AdvancedPromptForm() {
        const mappedValues: GenerateBasicPromptInput = {
         commercialObjective: values.commercialObjective,
         ethnicity: values.complexion,
-        clothingType: values.clothingType || '',
+        clothingType: values.clothingType || values.style,
         brandPalette: brandPaletteColors,
         style: values.style,
         mood: values.mood,
@@ -185,6 +185,8 @@ export function AdvancedPromptForm() {
         brandGuidelinesText: values.brandGuidelinesText,
         pose: values.pose,
         gender: values.gender,
+        faceShape: values.faceShape,
+        bodyShape: values.bodyShape,
       }
 
       const result = await generateBasicPrompt(mappedValues);
@@ -691,5 +693,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
