@@ -2,8 +2,8 @@
 'use client';
 
 import React from 'react';
-import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
@@ -46,9 +46,9 @@ const formSchema = z.object({
 });
 
 const COMMERCIAL_OBJECTIVES = [
-    { value: 'brand-awareness', label: 'Brand Awareness', description: 'Engage and attract a wide audience.' },
-    { value: 'product-listing', label: 'Product Listing (PLP)', description: 'Showcase products in a grid.' },
-    { value: 'product-detail', label: 'Product Detail (PDP)', description: 'Focus on a single product\'s features.' },
+    { value: 'brand-awareness', label: 'Brand Awareness', description: 'For grabbing attention and for hero images.' },
+    { value: 'product-listing', label: 'Product Listing Page (PLP)', description: 'To be featured alongside other products as part of a category.' },
+    { value: 'product-detail', label: 'Product Detail Page (PDP)', description: 'For focusing on an individual product.' },
 ];
 
 const FACE_SHAPES = [
@@ -231,8 +231,6 @@ export function AdvancedPromptForm() {
     if (isValid) {
         if (step < TOTAL_STEPS) {
             setStep(prev => prev + 1);
-        } else {
-            form.handleSubmit(onSubmit)();
         }
     }
   };
@@ -287,7 +285,13 @@ export function AdvancedPromptForm() {
                                     <FormItem>
                                         <FormControl>
                                             <RadioGroup
-                                                onValueChange={field.onChange}
+                                                onValueChange={(value) => {
+                                                    field.onChange(value);
+                                                    if (value === 'product-detail') {
+                                                        const label = COMMERCIAL_OBJECTIVES.find(o => o.value === value)?.label || ''
+                                                        form.setValue('commercialObjective', label);
+                                                    }
+                                                }}
                                                 defaultValue={field.value}
                                                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
                                             >
@@ -713,6 +717,10 @@ export function AdvancedPromptForm() {
                                     <Button variant="ghost" size="sm" onClick={() => setStep(5)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
                                 </div>
                             </div>
+                            <Button type="submit" disabled={isLoading} className="w-full">
+                                <WandSparkles className="mr-2 h-4 w-4" />
+                                {isLoading ? 'Generating...' : 'Generate Prompt'}
+                            </Button>
                         </CardContent>
                      </Card>
                 )}
@@ -726,12 +734,6 @@ export function AdvancedPromptForm() {
                   <div className="flex gap-2">
                      {step < TOTAL_STEPS && (
                         <Button type="button" onClick={nextStep}>Next</Button>
-                    )}
-                    {step === TOTAL_STEPS && (
-                        <Button type="submit" disabled={isLoading}>
-                            <WandSparkles className="mr-2 h-4 w-4" />
-                            {isLoading ? 'Generating...' : 'Generate Prompt'}
-                        </Button>
                     )}
                   </div>
               </div>
