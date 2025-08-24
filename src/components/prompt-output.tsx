@@ -35,11 +35,11 @@ export function PromptOutput({ prompt }: PromptOutputProps) {
 
   return (
     <div className="relative mt-6">
-        <Button variant="ghost" size="icon" onClick={onCopy} className="absolute top-2 right-2">
+        <Button variant="ghost" size="icon" onClick={onCopy} className="absolute top-2 right-2 h-8 w-8">
           {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
           <span className="sr-only">Copy prompt</span>
         </Button>
-        <pre className="text-sm bg-muted rounded-md p-4 whitespace-pre-wrap font-body">
+        <pre className="text-sm bg-muted rounded-md p-4 pr-12 whitespace-pre-wrap font-body">
           <code>{prompt}</code>
         </pre>
     </div>
