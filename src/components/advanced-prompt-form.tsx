@@ -1,7 +1,8 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,7 +32,7 @@ const formSchema = z.object({
   faceShape: z.string().min(1, "Face shape is required"),
   complexion: z.string().min(1, 'Complexion is required.'),
   bodyShape: z.string().min(1, "Body shape is required"),
-  gender: z.string().default('female'),
+  gender: z.string().optional(),
   clothingType: z.string().optional(),
   style: z.string().min(1, 'Style is required.'),
   mood: z.string().min(1, 'Mood is required.'),
@@ -97,7 +98,7 @@ const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
-    { value: 'seated-power', label: 'Posed while seated, conveying authority and control.' },
+    { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
 ]
 
 
@@ -159,9 +160,11 @@ export function AdvancedPromptForm() {
             if (selectedPalette) {
                 brandPaletteColors = selectedPalette.colors;
             }
-        } else if (values.dominantColor) {
-            brandPaletteColors = [values.dominantColor];
         }
+        if (values.dominantColor && !brandPaletteColors.includes(values.dominantColor)) {
+          brandPaletteColors.push(values.dominantColor);
+        }
+
 
        const mappedValues: GenerateBasicPromptInput = {
         commercialObjective: values.commercialObjective,
@@ -234,7 +237,7 @@ export function AdvancedPromptForm() {
   const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
 
   const handlePaletteChange = (paletteName: string) => {
-    form.setValue('brandPalette', paletteName);
+    form.setValue('brandPalette', paletteName, { shouldValidate: true });
     const palette = brandPalettes.find(p => p.name === paletteName);
     if (palette && palette.colors.length > 0) {
       form.setValue('dominantColor', palette.colors[0], { shouldValidate: true });
@@ -242,6 +245,7 @@ export function AdvancedPromptForm() {
       form.setValue('dominantColor', '', { shouldValidate: true });
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -696,24 +700,27 @@ export function AdvancedPromptForm() {
                                     <Button variant="ghost" size="sm" onClick={() => setStep(5)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
                                 </div>
                             </div>
-                             <div className="flex justify-between pt-4">
-                                <Button type="button" variant="outline" onClick={prevStep}>Back</Button>
-                                <Button type="submit" disabled={isLoading}>
-                                    <WandSparkles className="mr-2 h-4 w-4" />
-                                    {isLoading ? 'Generating...' : 'Generate Prompt'}
-                                </Button>
-                            </div>
                         </CardContent>
                      </Card>
                 )}
 
 
               <div className="flex justify-between pt-4">
-                  {step > 1 && step < TOTAL_STEPS && (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>)}
-                  {step === 1 && <div/>}
-                  {step < TOTAL_STEPS && (
-                      <Button type="button" onClick={nextStep}>Next</Button>
-                  )}
+                  <div>
+                    {step > 1 && (<Button type="button" variant="outline" onClick={prevStep}>Back</Button>)}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {step < TOTAL_STEPS && (
+                        <Button type="button" onClick={nextStep}>Next</Button>
+                    )}
+                    {step === TOTAL_STEPS && (
+                        <Button type="submit" disabled={isLoading}>
+                            <WandSparkles className="mr-2 h-4 w-4" />
+                            {isLoading ? 'Generating...' : 'Generate Prompt'}
+                        </Button>
+                    )}
+                  </div>
               </div>
             </form>
           </Form>
@@ -722,5 +729,3 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
-
-    
