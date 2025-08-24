@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -93,13 +93,18 @@ const LIGHTING_OPTIONS = [
     { value: 'hard', label: 'Hard', description: 'Creates sharp, well-defined shadows and highlights, adding drama and contrast.' },
 ];
 
-
 const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
     { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
 ]
+
+const moodLightingCompatibility: Record<string, string[]> = {
+    'bright-airy': ['soft', 'neutral'],
+    'neutral-studio': ['soft', 'neutral'],
+    'moody-contrast': ['hard'],
+};
 
 
 const FormLabelBlack = React.forwardRef<
@@ -226,6 +231,8 @@ export function AdvancedPromptForm() {
     if (isValid) {
         if (step < TOTAL_STEPS) {
             setStep(prev => prev + 1);
+        } else {
+            form.handleSubmit(onSubmit)();
         }
     }
   };
@@ -246,6 +253,13 @@ export function AdvancedPromptForm() {
     }
   };
 
+  const handleMoodChange = (mood: string) => {
+    form.setValue('mood', mood);
+    const currentLighting = form.getValues('lighting');
+    if (currentLighting && !moodLightingCompatibility[mood]?.includes(currentLighting)) {
+        form.setValue('lighting', '');
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -557,7 +571,7 @@ export function AdvancedPromptForm() {
                             <CardDescription>Define the atmosphere and lighting of your visuals.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8">
-                            <FormField
+                             <FormField
                                 control={form.control}
                                 name="mood"
                                 render={({ field }) => (
@@ -571,7 +585,7 @@ export function AdvancedPromptForm() {
                                                         label={mood.label}
                                                         description={mood.description}
                                                         isSelected={field.value === mood.value}
-                                                        onSelect={() => field.onChange(mood.value)}
+                                                        onSelect={() => handleMoodChange(mood.value)}
                                                     />
                                                 ))}
                                             </div>
@@ -589,15 +603,19 @@ export function AdvancedPromptForm() {
                                          <FormLabelBlack className="text-base font-semibold">Light Tone</FormLabelBlack>
                                         <FormControl>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                {LIGHTING_OPTIONS.map((option) => (
-                                                    <MultiChoiceOption
-                                                        key={option.value}
-                                                        label={option.label}
-                                                        description={option.description}
-                                                        isSelected={field.value === option.value}
-                                                        onSelect={() => field.onChange(option.value)}
-                                                    />
-                                                ))}
+                                                {LIGHTING_OPTIONS.map((option) => {
+                                                    const isCompatible = watchAllFields.mood ? moodLightingCompatibility[watchAllFields.mood]?.includes(option.value) : true;
+                                                    return (
+                                                        <MultiChoiceOption
+                                                            key={option.value}
+                                                            label={option.label}
+                                                            description={option.description}
+                                                            isSelected={field.value === option.value}
+                                                            onSelect={() => field.onChange(option.value)}
+                                                            disabled={!isCompatible}
+                                                        />
+                                                    )
+                                                })}
                                             </div>
                                         </FormControl>
                                         <FormMessage />
@@ -706,7 +724,7 @@ export function AdvancedPromptForm() {
                   </div>
                   
                   <div className="flex gap-2">
-                    {step < TOTAL_STEPS && (
+                     {step < TOTAL_STEPS && (
                         <Button type="button" onClick={nextStep}>Next</Button>
                     )}
                     {step === TOTAL_STEPS && (

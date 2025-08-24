@@ -7,16 +7,18 @@ interface MultiChoiceOptionProps {
   description: string;
   isSelected: boolean;
   onSelect: () => void;
+  disabled?: boolean;
 }
 
-export function MultiChoiceOption({ label, description, isSelected, onSelect }: MultiChoiceOptionProps) {
+export function MultiChoiceOption({ label, description, isSelected, onSelect, disabled = false }: MultiChoiceOptionProps) {
   return (
     <div
       className={cn(
-        'relative rounded-lg p-4 cursor-pointer group border-2 bg-card',
-        isSelected ? 'border-primary bg-accent' : 'border-border'
+        'relative rounded-lg p-4 group border-2 bg-card',
+        isSelected ? 'border-primary bg-accent' : 'border-border',
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
       )}
-      onClick={onSelect}
+      onClick={disabled ? undefined : onSelect}
     >
       {isSelected && (
         <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
