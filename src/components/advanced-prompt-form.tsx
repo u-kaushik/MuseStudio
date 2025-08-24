@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -75,10 +75,10 @@ const COMPLEXIONS = [
 ];
 
 const STYLE_CATEGORIES = [
-    { value: 'basics', label: 'Basics' },
-    { value: 'formal', label: 'Formal' },
-    { value: 'athleisure', label: 'Athleisure' },
-    { value: 'outerwear', label: 'Outerwear' },
+    { value: 'basics', label: 'Basics', description: 'Everyday essential clothing items.' },
+    { value: 'formal', label: 'Formal', description: 'Elegant attire for special events.' },
+    { value: 'athleisure', label: 'Athleisure', description: 'Sporty, comfortable, and stylish.' },
+    { value: 'outerwear', label: 'Outerwear', description: 'Jackets, coats, and protective gear.' },
 ]
 
 const MOODS = [
@@ -451,29 +451,24 @@ export function AdvancedPromptForm() {
                                                 className="grid grid-cols-2 md:grid-cols-4 gap-4"
                                             >
                                                 {STYLE_CATEGORIES.map(option => (
-                                                    <FormItem key={option.value} className="flex-grow">
-                                                        <FormControl>
-                                                             <div 
-                                                                className="relative"
+                                                    <div key={option.value}>
+                                                        <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+                                                        <Label
+                                                            htmlFor={option.value}
+                                                            className={cn(
+                                                                'relative flex flex-col rounded-lg border-2 p-4 cursor-pointer',
+                                                                'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent'
+                                                            )}
                                                             >
-                                                                <RadioGroupItem value={option.value} id={option.value} className="sr-only peer" />
-                                                                <Label 
-                                                                    htmlFor={option.value} 
-                                                                    className={cn(
-                                                                        'rounded-lg p-4 cursor-pointer group border-2 bg-card text-center block',
-                                                                        'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-accent'
-                                                                    )}
-                                                                >
-                                                                    {field.value === option.value && (
-                                                                        <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
-                                                                            <CheckCircle className="h-6 w-6" />
-                                                                        </div>
-                                                                    )}
-                                                                    <p className="font-bold">{option.label}</p>
-                                                                </Label>
-                                                            </div>
-                                                        </FormControl>
-                                                    </FormItem>
+                                                            {field.value === option.value && (
+                                                                <div className="absolute top-2 right-2 bg-background rounded-full text-primary">
+                                                                    <CheckCircle className="h-6 w-6" />
+                                                                </div>
+                                                            )}
+                                                            <span className="font-bold">{option.label}</span>
+                                                            <span className="text-sm text-muted-foreground">{option.description}</span>
+                                                        </Label>
+                                                    </div>
                                                 ))}
                                             </RadioGroup>
                                         </FormControl>
