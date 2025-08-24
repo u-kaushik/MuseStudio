@@ -150,14 +150,6 @@ export function AdvancedPromptForm() {
     return options.find(o => o.value === value)?.label || value;
   };
   
-  useEffect(() => {
-    const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
-    if (selectedPalette && selectedPalette.colors.length > 0) {
-      form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
-    }
-  }, [watchAllFields.brandPalette, form]);
-
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
@@ -240,6 +232,16 @@ export function AdvancedPromptForm() {
   }
 
   const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
+
+  const handlePaletteChange = (paletteName: string) => {
+    form.setValue('brandPalette', paletteName);
+    const palette = brandPalettes.find(p => p.name === paletteName);
+    if (palette && palette.colors.length > 0) {
+      form.setValue('dominantColor', palette.colors[0], { shouldValidate: true });
+    } else {
+      form.setValue('dominantColor', '', { shouldValidate: true });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -483,7 +485,7 @@ export function AdvancedPromptForm() {
                                         render={({ field }) => (
                                         <FormItem>
                                             <FormLabelBlack className="text-base font-semibold">Brand Palette</FormLabelBlack>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={handlePaletteChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select a brand palette" />
