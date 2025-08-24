@@ -2,7 +2,7 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AnalyzeImageForm } from "@/components/analyze-image-form";
+import { BasicPromptForm } from "@/components/basic-prompt-form";
 import { AdvancedPromptForm } from "@/components/advanced-prompt-form";
 import { SettingsPage } from "@/components/settings-page";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,14 +14,14 @@ function getInitialTab(tabParam: string | null) {
   if (tabParam === 'advanced') {
     return tabParam;
   }
-  return 'basic';
+  return 'auto';
 }
 
 function HomePageContentComponent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState('auto');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -56,15 +56,15 @@ function HomePageContentComponent() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-lg grid-cols-2">
-              <TabsTrigger value="basic">
-                Basic Mode
+              <TabsTrigger value="auto">
+                Auto Mode
               </TabsTrigger>
               <TabsTrigger value="advanced">Advanced Mode</TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value="basic" className="mt-6">
+          <TabsContent value="auto" className="mt-6">
             <div className="mx-auto max-w-4xl">
-              <AnalyzeImageForm />
+              <BasicPromptForm />
             </div>
           </TabsContent>
           <TabsContent value="advanced" className="mt-6">

@@ -42,8 +42,8 @@ const analyzeImageFlow = ai.defineFlow(
         prompt: [
             { text: `You are an expert fashion prompt engineer. Analyze the provided image based on the MUSE framework (Morphology, Uniformity, Style, Essence).
   Based on your analysis, generate a detailed, ready-to-use prompt to recreate a similar image.
-  The prompt should be a complete and polished sentence, without any placeholders or variables in curly brackets.
-  Specifically analyze and include the model's face shape, complexion, and body shape in the prompt.
+  The prompt should be a complete and polished sentence.
+  Specifically analyze and include the model's face shape, complexion, body shape, and pose in the prompt.
 
   Generate a title and a prompt.` },
             { media: { url: input.imageDataUri } },
