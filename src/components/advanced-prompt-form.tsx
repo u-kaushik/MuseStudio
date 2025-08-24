@@ -97,7 +97,7 @@ const POSES = [
     { value: 'confident-stand', label: 'Confident Stand', description: 'Strong and stable, looking directly at the camera.' },
     { value: 'dynamic-action', label: 'Dynamic Action', description: 'Mid-movement, conveying energy and motion.' },
     { value: 'relaxed-lean', label: 'Relaxed Lean', description: 'Casually leaning against a surface, looking off-camera.' },
-    { value: 'seated-power', label: 'Seated Power', description: 'Posed while seated, conveying authority and control.' },
+    { value: 'seated-power', label: 'Posed while seated, conveying authority and control.' },
 ]
 
 
@@ -153,11 +153,9 @@ export function AdvancedPromptForm() {
   useEffect(() => {
     const selectedPalette = brandPalettes.find(p => p.name === watchAllFields.brandPalette);
     if (selectedPalette && selectedPalette.colors.length > 0) {
-      if (watchAllFields.dominantColor !== selectedPalette.colors[0]) {
-         form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
-      }
+      form.setValue('dominantColor', selectedPalette.colors[0], { shouldValidate: true });
     }
-  }, [watchAllFields.brandPalette, form, watchAllFields.dominantColor]);
+  }, [watchAllFields.brandPalette, form]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -175,6 +173,7 @@ export function AdvancedPromptForm() {
 
        const mappedValues: GenerateBasicPromptInput = {
         commercialObjective: values.commercialObjective,
+        gender: values.gender,
         ethnicity: values.complexion,
         clothingType: values.clothingType || values.style,
         brandPalette: brandPaletteColors,
@@ -184,7 +183,6 @@ export function AdvancedPromptForm() {
         intensity: values.intensity,
         brandGuidelinesText: values.brandGuidelinesText,
         pose: values.pose,
-        gender: values.gender,
         faceShape: values.faceShape,
         bodyShape: values.bodyShape,
       }
@@ -205,8 +203,37 @@ export function AdvancedPromptForm() {
     }
   }
 
-  const prevStep = () => setStep(prev => prev - 1);
-  const nextStep = () => setStep(prev => prev + 1);
+  const prevStep = () => setStep(prev => prev > 1 ? prev - 1 : 1);
+  
+  const nextStep = async () => {
+    let fieldsToValidate: (keyof z.infer<typeof formSchema>)[] = [];
+    switch (step) {
+        case 1:
+            fieldsToValidate = ['commercialObjective'];
+            break;
+        case 2:
+            fieldsToValidate = ['faceShape', 'complexion', 'bodyShape'];
+            break;
+        case 3:
+            fieldsToValidate = ['style', 'dominantColor'];
+            break;
+        case 4:
+            fieldsToValidate = ['mood', 'lighting'];
+            break;
+        case 5:
+            fieldsToValidate = ['pose'];
+            break;
+        default:
+            break;
+    }
+
+    const isValid = await form.trigger(fieldsToValidate);
+    if (isValid) {
+        if (step < TOTAL_STEPS) {
+            setStep(prev => prev + 1);
+        }
+    }
+  };
   
   if (isLoading) {
     return <GeneratingAnimation />;
@@ -693,3 +720,5 @@ export function AdvancedPromptForm() {
     </div>
   );
 }
+
+    
